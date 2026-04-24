@@ -9,6 +9,10 @@ export const dynamic = "force-dynamic";
 
 const packageStatuses = Object.values(PackageStatus);
 
+function EmptyState({ message }: { message: string }) {
+  return <p className="rounded-md border border-ink/10 bg-cream px-4 py-3 text-sm text-ink/60">{message}</p>;
+}
+
 function dateInputValue(value: Date | null) {
   return value?.toISOString().slice(0, 10) ?? "";
 }
@@ -36,6 +40,7 @@ export default async function InventoryPage() {
           <label className="md:col-span-2">
             <span className="text-xs font-medium uppercase text-ink/60">Product</span>
             <select name="productId" required className="mt-1 w-full rounded-md border border-ink/15 px-3 py-2 text-sm">
+              {products.length === 0 ? <option value="">Create an active product first</option> : null}
               {products.map((product) => (
                 <option key={product.id} value={product.id}>
                   {product.name}
@@ -90,9 +95,15 @@ export default async function InventoryPage() {
             <input name="expiresAt" type="date" className="mt-1 w-full rounded-md border border-ink/15 px-3 py-2 text-sm" />
           </label>
           <div className="md:col-span-6">
-            <button className="rounded-md bg-moss px-4 py-2 text-sm font-semibold text-white">Create package</button>
+            <button
+              disabled={products.length === 0}
+              className="rounded-md bg-moss px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-ink/30"
+            >
+              Create package
+            </button>
           </div>
         </form>
+        {products.length === 0 ? <div className="mt-4"><EmptyState message="No active products are available for package creation." /></div> : null}
       </PagePanel>
 
       <section className="overflow-hidden rounded-lg border border-ink/10 bg-white shadow-sm">
@@ -100,6 +111,11 @@ export default async function InventoryPage() {
           <h2 className="text-lg font-semibold text-ink">Packages</h2>
         </div>
         <div className="divide-y divide-ink/10">
+          {packages.length === 0 ? (
+            <div className="p-5">
+              <EmptyState message="No inventory packages have been created yet." />
+            </div>
+          ) : null}
           {packages.map((inventoryPackage) => (
             <div key={inventoryPackage.id} className="p-5">
               <div className="grid gap-3 md:grid-cols-7 md:items-center">

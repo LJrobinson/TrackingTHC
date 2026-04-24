@@ -9,6 +9,10 @@ export const dynamic = "force-dynamic";
 const productCategories = Object.values(ProductCategory);
 const productStatuses = Object.values(ProductStatus);
 
+function EmptyState({ message }: { message: string }) {
+  return <p className="rounded-md border border-ink/10 bg-cream px-4 py-3 text-sm text-ink/60">{message}</p>;
+}
+
 export default async function ProductsPage() {
   const products = await prisma.product.findMany({
     orderBy: [{ status: "asc" }, { updatedAt: "desc" }]
@@ -68,6 +72,11 @@ export default async function ProductsPage() {
           <h2 className="text-lg font-semibold text-ink">Products</h2>
         </div>
         <div className="divide-y divide-ink/10">
+          {products.length === 0 ? (
+            <div className="p-5">
+              <EmptyState message="No products have been created yet." />
+            </div>
+          ) : null}
           {products.map((product) => (
             <div key={product.id} className="p-5">
               <div className="grid gap-3 md:grid-cols-6 md:items-center">
