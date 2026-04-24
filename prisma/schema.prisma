@@ -1,0 +1,497 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  INVITED
+  DISABLED
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MANAGER
+  BUDTENDER
+  AUDITOR
+}
+
+enum FacilityStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum LicenseType {
+  RETAIL
+  CULTIVATION
+  MANUFACTURING
+  DISTRIBUTION
+  TESTING
+  DELIVERY
+}
+
+enum ProductCategory {
+  FLOWER
+  PRE_ROLL
+  EDIBLE
+  CONCENTRATE
+  VAPE
+  TOPICAL
+  TINCTURE
+  ACCESSORY
+}
+
+enum ProductStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum PackageStatus {
+  ACTIVE
+  ON_HOLD
+  INACTIVE
+  FINISHED
+  IN_TRANSIT
+}
+
+enum AdjustmentType {
+  MANUAL
+  SALE
+  INTAKE
+  WASTE
+  RECONCILIATION
+}
+
+enum SaleStatus {
+  DRAFT
+  COMPLETED
+  VOIDED
+}
+
+enum PaymentType {
+  CASH
+  CARD
+  OTHER
+}
+
+enum SyncStatus {
+  NOT_SYNCED
+  SYNC_PENDING
+  SYNCED
+  SYNC_FAILED
+  CONFLICT
+}
+
+enum SyncJobType {
+  PACKAGE_IMPORT
+  PACKAGE_ADJUSTMENT
+  SALES_RECEIPT
+  RECONCILIATION
+  WEBHOOK_PROCESSING
+}
+
+enum SyncJobStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  CANCELED
+}
+
+enum MetrcCredentialStatus {
+  NOT_CONFIGURED
+  ACTIVE
+  DISABLED
+  ROTATION_REQUIRED
+}
+
+enum MetrcRequestStatus {
+  PENDING
+  SENT
+  SUCCEEDED
+  FAILED
+  RETRYING
+  SKIPPED
+}
+
+enum WebhookStatus {
+  RECEIVED
+  PROCESSED
+  FAILED
+  IGNORED
+}
+
+enum ReconciliationStatus {
+  MATCHED
+  LOCAL_ONLY
+  METRC_ONLY
+  QUANTITY_MISMATCH
+  STATUS_MISMATCH
+  PRODUCT_MISMATCH
+}
+
+model User {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  name      String
+  status    UserStatus @default(ACTIVE)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  memberships          OrganizationMember[]
+  auditLogs            AuditLog[]            @relation("AuditActor")
+  inventoryAdjustments InventoryAdjustment[] @relation("AdjustmentActor")
+  sales                Sale[]                @relation("SaleCreatedBy")
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members                 OrganizationMember[]
+  facilities              Facility[]
+  products                Product[]
+  auditLogs               AuditLog[]
+  metrcSyncJobs           MetrcSyncJob[]
+  metrcOutboundRequests   MetrcOutboundRequest[]
+  metrcWebhookEvents      MetrcWebhookEvent[]
+  reconciliationSnapshots MetrcReconciliationSnapshot[]
+}
+
+model OrganizationMember {
+  id             String     @id @default(uuid())
+  organizationId String
+  userId         String
+  role           MemberRole
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+}
+
+model Facility {
+  id             String         @id @default(uuid())
+  organizationId String
+  name           String
+  code           String
+  status         FacilityStatus @default(ACTIVE)
+  timezone       String         @default("America/Los_Angeles")
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  organization            Organization                 @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  licenses                FacilityLicense[]
+  products                Product[]
+  inventoryPackages       InventoryPackage[]
+  inventoryAdjustments    InventoryAdjustment[]
+  sales                   Sale[]
+  auditLogs               AuditLog[]
+  metrcCredentials        MetrcCredential[]
+  metrcSyncJobs           MetrcSyncJob[]
+  metrcOutboundRequests   MetrcOutboundRequest[]
+  metrcWebhookEvents      MetrcWebhookEvent[]
+  reconciliationSnapshots MetrcReconciliationSnapshot[]
+
+  @@unique([organizationId, code])
+  @@index([organizationId])
+}
+
+model FacilityLicense {
+  id              String      @id @default(uuid())
+  facilityId      String
+  licenseNumber   String
+  state           String
+  licenseType     LicenseType
+  metrcBaseUrl    String
+  isPrimary       Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  facility                Facility                    @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  inventoryPackages       InventoryPackage[]
+  metrcCredentials        MetrcCredential[]
+  metrcSyncJobs           MetrcSyncJob[]
+  metrcOutboundRequests   MetrcOutboundRequest[]
+  metrcWebhookEvents      MetrcWebhookEvent[]
+  reconciliationSnapshots MetrcReconciliationSnapshot[]
+
+  @@unique([facilityId, licenseNumber])
+  @@index([licenseNumber])
+}
+
+model Product {
+  id             String          @id @default(uuid())
+  organizationId String
+  facilityId     String?
+  name           String
+  sku            String
+  category       ProductCategory
+  unitOfMeasure  String
+  priceCents     Int
+  thcPercent     Decimal?        @db.Decimal(5, 2)
+  cbdPercent     Decimal?        @db.Decimal(5, 2)
+  status         ProductStatus   @default(ACTIVE)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  organization      Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  facility          Facility?          @relation(fields: [facilityId], references: [id])
+  inventoryPackages InventoryPackage[]
+  saleLineItems     SaleLineItem[]
+
+  @@unique([organizationId, sku])
+  @@index([facilityId])
+}
+
+model InventoryPackage {
+  id                String        @id @default(uuid())
+  organizationId    String
+  facilityId        String
+  facilityLicenseId String?
+  productId         String
+  metrcPackageId    String?
+  label             String
+  quantity          Decimal       @db.Decimal(12, 3)
+  unitOfMeasure     String
+  status            PackageStatus @default(ACTIVE)
+  syncStatus        SyncStatus    @default(NOT_SYNCED)
+  source            String        @default("manual")
+  receivedAt        DateTime?
+  expiresAt         DateTime?
+  lastSyncedAt      DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  facility             Facility              @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  facilityLicense      FacilityLicense?      @relation(fields: [facilityLicenseId], references: [id])
+  product              Product               @relation(fields: [productId], references: [id])
+  inventoryAdjustments InventoryAdjustment[]
+  saleLineItems        SaleLineItem[]
+
+  @@unique([facilityId, label])
+  @@index([productId])
+  @@index([syncStatus])
+}
+
+model InventoryAdjustment {
+  id             String         @id @default(uuid())
+  organizationId String
+  facilityId     String
+  packageId      String
+  actorUserId    String?
+  type           AdjustmentType
+  reason         String
+  quantityDelta  Decimal        @db.Decimal(12, 3)
+  quantityBefore Decimal        @db.Decimal(12, 3)
+  quantityAfter  Decimal        @db.Decimal(12, 3)
+  syncStatus     SyncStatus     @default(NOT_SYNCED)
+  metrcReason    String?
+  notes          String?
+  createdAt      DateTime       @default(now())
+
+  facility         Facility         @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  inventoryPackage InventoryPackage @relation(fields: [packageId], references: [id])
+  actor            User?            @relation("AdjustmentActor", fields: [actorUserId], references: [id])
+
+  @@index([facilityId])
+  @@index([packageId])
+  @@index([syncStatus])
+}
+
+model Sale {
+  id             String      @id @default(uuid())
+  organizationId String
+  facilityId     String
+  createdById    String?
+  receiptNumber  String
+  status         SaleStatus  @default(DRAFT)
+  paymentType    PaymentType @default(CASH)
+  subtotalCents   Int         @default(0)
+  taxCents        Int         @default(0)
+  totalCents      Int         @default(0)
+  syncStatus      SyncStatus  @default(NOT_SYNCED)
+  metrcReceiptId  String?
+  completedAt     DateTime?
+  voidedAt        DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  facility    Facility       @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  createdBy   User?          @relation("SaleCreatedBy", fields: [createdById], references: [id])
+  lineItems   SaleLineItem[]
+
+  @@unique([facilityId, receiptNumber])
+  @@index([syncStatus])
+}
+
+model SaleLineItem {
+  id             String   @id @default(uuid())
+  saleId         String
+  productId      String
+  packageId      String?
+  quantity       Decimal  @db.Decimal(12, 3)
+  unitOfMeasure  String
+  unitPriceCents Int
+  lineTotalCents Int
+  createdAt      DateTime @default(now())
+
+  sale             Sale              @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product          Product           @relation(fields: [productId], references: [id])
+  inventoryPackage InventoryPackage? @relation(fields: [packageId], references: [id])
+
+  @@index([saleId])
+  @@index([packageId])
+}
+
+model AuditLog {
+  id             String   @id @default(uuid())
+  organizationId String
+  facilityId     String?
+  actorUserId    String?
+  action         String
+  entityType     String
+  entityId       String?
+  before         Json?
+  after          Json?
+  metadata       Json?
+  requestId      String?
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  facility     Facility?    @relation(fields: [facilityId], references: [id])
+  actor        User?        @relation("AuditActor", fields: [actorUserId], references: [id])
+
+  @@index([organizationId, createdAt])
+  @@index([facilityId, createdAt])
+  @@index([entityType, entityId])
+}
+
+model MetrcCredential {
+  id                  String                @id @default(uuid())
+  facilityId          String
+  facilityLicenseId   String
+  status              MetrcCredentialStatus @default(NOT_CONFIGURED)
+  integratorKeyRef    String
+  encryptedUserApiKey String?
+  keyFingerprint      String?
+  lastVerifiedAt      DateTime?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  facility        Facility        @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  facilityLicense FacilityLicense @relation(fields: [facilityLicenseId], references: [id], onDelete: Cascade)
+
+  @@unique([facilityLicenseId])
+  @@index([status])
+}
+
+model MetrcSyncJob {
+  id                String        @id @default(uuid())
+  organizationId    String
+  facilityId        String
+  facilityLicenseId String?
+  type              SyncJobType
+  status            SyncJobStatus @default(QUEUED)
+  syncStatus        SyncStatus    @default(SYNC_PENDING)
+  targetEntityType  String?
+  targetEntityId    String?
+  attempts          Int           @default(0)
+  lastError         String?
+  startedAt         DateTime?
+  completedAt       DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  facility        Facility         @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  facilityLicense FacilityLicense? @relation(fields: [facilityLicenseId], references: [id])
+
+  @@index([facilityId, status])
+  @@index([targetEntityType, targetEntityId])
+}
+
+model MetrcOutboundRequest {
+  id                String             @id @default(uuid())
+  organizationId    String
+  facilityId        String
+  facilityLicenseId String?
+  idempotencyKey    String
+  method            String
+  endpoint          String
+  status            MetrcRequestStatus @default(PENDING)
+  requestHash       String
+  responseStatus    Int?
+  responseMetrcId   String?
+  errorCode         String?
+  errorMessage      String?
+  attemptCount      Int                @default(0)
+  nextRetryAt       DateTime?
+  sentAt            DateTime?
+  completedAt       DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  facility        Facility         @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  facilityLicense FacilityLicense? @relation(fields: [facilityLicenseId], references: [id])
+
+  @@unique([idempotencyKey])
+  @@index([facilityId, status])
+}
+
+model MetrcWebhookEvent {
+  id                String        @id @default(uuid())
+  organizationId    String
+  facilityId        String?
+  facilityLicenseId String?
+  eventType         String
+  status            WebhookStatus @default(RECEIVED)
+  payloadHash       String
+  payload           Json
+  processedAt       DateTime?
+  errorMessage      String?
+  createdAt         DateTime      @default(now())
+
+  organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  facility        Facility?        @relation(fields: [facilityId], references: [id])
+  facilityLicense FacilityLicense? @relation(fields: [facilityLicenseId], references: [id])
+
+  @@index([organizationId, createdAt])
+  @@index([status])
+}
+
+model MetrcReconciliationSnapshot {
+  id                String               @id @default(uuid())
+  organizationId    String
+  facilityId        String
+  facilityLicenseId String?
+  packageLabel      String
+  localPackageId    String?
+  metrcPackageId    String?
+  status            ReconciliationStatus
+  localQuantity     Decimal?             @db.Decimal(12, 3)
+  metrcQuantity     Decimal?             @db.Decimal(12, 3)
+  details           Json?
+  capturedAt        DateTime             @default(now())
+
+  organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  facility        Facility         @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  facilityLicense FacilityLicense? @relation(fields: [facilityLicenseId], references: [id])
+
+  @@index([facilityId, capturedAt])
+  @@index([status])
+}
