@@ -230,3 +230,60 @@ export async function processPendingFakeSyncJobs(actorUserId: string | null) {
 
   return { processed, total: pendingJobs.length };
 }
+
+export async function simulateFakeSyncJobFailure(input: {
+  actorUserId: string | null;
+  jobId: string;
+  reason: string;
+}) {
+  if (!input.jobId) {
+    throw new Error("Select a sync job to fail.");
+  }
+
+  if (!input.reason) {
+    throw new Error("Failure reason is required.");
+  }
+
+  const existingJob = await prisma.metrcSyncJob.findUniqueOrThrow({
+    where: { id: input.jobId }
+  });
+
+  if (existingJob.status === SyncJobStatus.SUCCEEDED) {
+    throw new Error("Succeeded jobs cannot be manually failed.");
+  }
+
+  const failedJob = await prisma.metrcSyncJob.update({
+    where: { id: input.jobId },
+    data: {
+      status: SyncJobStatus.FAILED,
+      syncStatus: SyncStatus.SYNC_FAILED,
+      attempts: { increment: 1 },
+      completedAt: new Date(),
+      lastError: input.reason
+    }
+  });
+
+  if (failedJob.targetEntityType === "InventoryPackage" && failedJob.targetEntityId) {
+    await prisma.inventoryPackage.update({
+      where: { id: failedJob.targetEntityId },
+      data: { syncStatus: SyncStatus.SYNC_FAILED }
+    });
+  }
+
+  await recordAuditEvent({
+    organizationId: failedJob.organizationId,
+    facilityId: failedJob.facilityId,
+    actorUserId: input.actorUserId,
+    action: "metrc.sync_job.failed",
+    entityType: "MetrcSyncJob",
+    entityId: failedJob.id,
+    before: jobSnapshot(existingJob),
+    after: {
+      ...jobSnapshot(failedJob),
+      error: input.reason,
+      simulated: true
+    } satisfies Prisma.InputJsonObject
+  });
+
+  return failedJob;
+}

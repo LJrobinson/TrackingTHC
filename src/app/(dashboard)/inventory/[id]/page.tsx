@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PagePanel } from "@/components/ui/page-panel";
+import { getCurrentUser } from "@/server/auth/current-user";
+import { hasPermission } from "@/server/auth/permissions";
 import { formatDate, formatDateTime, formatQuantity, summarizeMetadata } from "@/server/core/format";
 import { prisma } from "@/server/db/prisma";
 import { adjustPackageQuantity } from "../actions";
@@ -26,6 +28,8 @@ function DetailItem({ label, value }: { label: string; value: React.ReactNode })
 
 export default async function PackageDetailPage({ params }: PackageDetailPageProps) {
   const { id } = await params;
+  const user = await getCurrentUser();
+  const canWriteInventory = hasPermission(user, "inventory:write");
   const inventoryPackage = await prisma.inventoryPackage.findUnique({
     where: { id },
     include: {
@@ -87,26 +91,42 @@ export default async function PackageDetailPage({ params }: PackageDetailPagePro
           <DetailItem label="Last synced" value={formatDateTime(inventoryPackage.lastSyncedAt)} />
         </div>
 
-        <form action={adjustPackageQuantity} className="mt-6 grid gap-3 md:grid-cols-5">
-          <input type="hidden" name="packageId" value={inventoryPackage.id} />
-          <label>
-            <span className="text-xs font-medium uppercase text-ink/60">Adjustment amount</span>
-            <input
-              name="quantityDelta"
-              type="number"
-              step="0.001"
-              required
-              className="mt-1 w-full rounded-md border border-ink/15 px-3 py-2 text-sm"
-            />
-          </label>
-          <label className="md:col-span-3">
-            <span className="text-xs font-medium uppercase text-ink/60">Reason</span>
-            <input name="reason" required className="mt-1 w-full rounded-md border border-ink/15 px-3 py-2 text-sm" />
-          </label>
-          <div className="flex items-end">
-            <button className="rounded-md bg-moss px-4 py-2 text-sm font-semibold text-white">Record adjustment</button>
+        {canWriteInventory ? (
+          <form action={adjustPackageQuantity} className="mt-6 grid gap-3 md:grid-cols-5">
+            <input type="hidden" name="packageId" value={inventoryPackage.id} />
+            <label>
+              <span className="text-xs font-medium uppercase text-ink/60">
+                Adjustment amount <span className="text-clay">Required</span>
+              </span>
+              <input
+                name="quantityDelta"
+                type="number"
+                step="0.001"
+                required
+                className="mt-1 w-full rounded-md border border-ink/15 px-3 py-2 text-sm"
+              />
+              <span className="mt-1 block text-xs text-ink/50">Use a negative value to reduce inventory.</span>
+            </label>
+            <label className="md:col-span-3">
+              <span className="text-xs font-medium uppercase text-ink/60">
+                Reason <span className="text-clay">Required</span>
+              </span>
+              <input
+                name="reason"
+                required
+                minLength={3}
+                className="mt-1 w-full rounded-md border border-ink/15 px-3 py-2 text-sm"
+              />
+            </label>
+            <div className="flex items-end">
+              <button className="rounded-md bg-moss px-4 py-2 text-sm font-semibold text-white">Record adjustment</button>
+            </div>
+          </form>
+        ) : (
+          <div className="mt-6">
+            <EmptyState message={`Role ${user.role} can view package history but cannot record adjustments.`} />
           </div>
-        </form>
+        )}
       </PagePanel>
 
       <section className="rounded-lg border border-ink/10 bg-white p-6 shadow-sm">

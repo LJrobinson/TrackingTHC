@@ -18,7 +18,7 @@ export function AppShell({ user, children }: AppShellProps) {
           </div>
           <div className="text-right text-sm">
             <p className="font-medium">{user.name}</p>
-            <p className="text-white/60">{user.role}</p>
+            <p className="text-white/60">Role: {user.role}</p>
           </div>
         </div>
         <nav className="mx-auto flex max-w-7xl gap-1 px-6 pb-3">
@@ -27,6 +27,7 @@ export function AppShell({ user, children }: AppShellProps) {
           <NavLink href="/products" label="Products" />
           <NavLink href="/sales" label="Sales" />
           <NavLink href="/sync-status" label="Sync Status" />
+          <NavLink href="/audit" label="Audit" />
         </nav>
       </header>
       <main className="mx-auto max-w-7xl px-6 py-6">
@@ -34,7 +35,7 @@ export function AppShell({ user, children }: AppShellProps) {
           <div>
             <p className="text-sm font-medium text-moss">Development dashboard</p>
             <p className="text-sm text-ink/60">
-              Auth is stubbed while audit and Metrc adapter boundaries are established.
+              Auth is stubbed. Current role: {user.role}.
             </p>
           </div>
           <FacilitySelector />

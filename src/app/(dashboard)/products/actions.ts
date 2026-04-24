@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/server/db/prisma";
 import { recordAuditEvent } from "@/server/audit/audit.service";
 import { getOperationalContext } from "@/server/core/context";
+import { assertPermission } from "@/server/auth/permissions";
 
 function getText(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
@@ -27,6 +28,10 @@ function getProductStatus(value: string) {
 }
 
 function getPriceCents(value: string) {
+  if (!value) {
+    throw new Error("Default price is required.");
+  }
+
   const price = Number(value);
 
   if (!Number.isFinite(price) || price < 0) {
@@ -57,6 +62,8 @@ function productSnapshot(product: {
 }
 
 export async function createProduct(formData: FormData) {
+  await assertPermission("catalog:write");
+
   const context = await getOperationalContext();
   const name = getText(formData, "name");
   const sku = getText(formData, "sku");
@@ -64,6 +71,23 @@ export async function createProduct(formData: FormData) {
 
   if (!name || !sku) {
     throw new Error("Product name and SKU are required.");
+  }
+
+  if (!unitOfMeasure) {
+    throw new Error("Unit is required.");
+  }
+
+  const existingProduct = await prisma.product.findUnique({
+    where: {
+      organizationId_sku: {
+        organizationId: context.organizationId,
+        sku
+      }
+    }
+  });
+
+  if (existingProduct) {
+    throw new Error("A product with this SKU already exists.");
   }
 
   const product = await prisma.product.create({
@@ -94,6 +118,8 @@ export async function createProduct(formData: FormData) {
 }
 
 export async function updateProduct(formData: FormData) {
+  await assertPermission("catalog:write");
+
   const context = await getOperationalContext();
   const id = getText(formData, "productId");
   const before = await prisma.product.findUniqueOrThrow({ where: { id } });
@@ -103,6 +129,19 @@ export async function updateProduct(formData: FormData) {
 
   if (!name || !sku) {
     throw new Error("Product name and SKU are required.");
+  }
+
+  const existingProduct = await prisma.product.findUnique({
+    where: {
+      organizationId_sku: {
+        organizationId: context.organizationId,
+        sku
+      }
+    }
+  });
+
+  if (existingProduct && existingProduct.id !== id) {
+    throw new Error("A different product already uses this SKU.");
   }
 
   const product = await prisma.product.update({
@@ -134,6 +173,8 @@ export async function updateProduct(formData: FormData) {
 }
 
 export async function archiveProduct(formData: FormData) {
+  await assertPermission("catalog:write");
+
   const context = await getOperationalContext();
   const id = getText(formData, "productId");
   const before = await prisma.product.findUniqueOrThrow({ where: { id } });

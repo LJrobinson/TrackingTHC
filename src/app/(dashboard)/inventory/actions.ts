@@ -13,6 +13,7 @@ import { prisma } from "@/server/db/prisma";
 import { recordAuditEvent } from "@/server/audit/audit.service";
 import { getOperationalContext } from "@/server/core/context";
 import { queueFakeMetrcSyncJob } from "@/server/metrc/fake-sync.service";
+import { assertPermission } from "@/server/auth/permissions";
 
 function getText(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
@@ -23,11 +24,27 @@ function getOptionalDate(value: string) {
     return null;
   }
 
-  return new Date(`${value}T00:00:00.000Z`);
+  const date = new Date(`${value}T00:00:00.000Z`);
+
+  if (Number.isNaN(date.getTime())) {
+    throw new Error("Enter a valid date.");
+  }
+
+  return date;
 }
 
 function getDecimal(value: string, label: string) {
-  const decimal = new Prisma.Decimal(value || "0");
+  if (!value) {
+    throw new Error(`${label} is required.`);
+  }
+
+  let decimal: Prisma.Decimal;
+
+  try {
+    decimal = new Prisma.Decimal(value);
+  } catch {
+    throw new Error(`${label} must be a valid number.`);
+  }
 
   if (!Number.isFinite(Number(decimal.toString()))) {
     throw new Error(`${label} must be a valid number.`);
@@ -81,6 +98,8 @@ function revalidateInventoryPaths(packageId?: string) {
 }
 
 export async function createPackage(formData: FormData) {
+  await assertPermission("inventory:write");
+
   const context = await getOperationalContext();
   const label = getText(formData, "label");
   const productId = getText(formData, "productId");
@@ -89,6 +108,10 @@ export async function createPackage(formData: FormData) {
 
   if (!label || !productId) {
     throw new Error("Package label and product are required.");
+  }
+
+  if (!unitOfMeasure) {
+    throw new Error("Unit is required.");
   }
 
   if (quantity.isNegative()) {
@@ -102,6 +125,19 @@ export async function createPackage(formData: FormData) {
       status: ProductStatus.ACTIVE
     }
   });
+
+  const existingPackage = await prisma.inventoryPackage.findUnique({
+    where: {
+      facilityId_label: {
+        facilityId: context.facilityId,
+        label
+      }
+    }
+  });
+
+  if (existingPackage) {
+    throw new Error("A package with this label already exists at this facility.");
+  }
 
   const inventoryPackage = await prisma.inventoryPackage.create({
     data: {
@@ -141,6 +177,8 @@ export async function createPackage(formData: FormData) {
 }
 
 export async function updatePackage(formData: FormData) {
+  await assertPermission("inventory:write");
+
   const context = await getOperationalContext();
   const id = getText(formData, "packageId");
   const before = await prisma.inventoryPackage.findUniqueOrThrow({ where: { id } });
@@ -150,6 +188,19 @@ export async function updatePackage(formData: FormData) {
 
   if (!label || !productId) {
     throw new Error("Package label and product are required.");
+  }
+
+  const existingPackage = await prisma.inventoryPackage.findUnique({
+    where: {
+      facilityId_label: {
+        facilityId: context.facilityId,
+        label
+      }
+    }
+  });
+
+  if (existingPackage && existingPackage.id !== id) {
+    throw new Error("A different package already uses this label at this facility.");
   }
 
   const inventoryPackage = await prisma.inventoryPackage.update({
@@ -180,6 +231,8 @@ export async function updatePackage(formData: FormData) {
 }
 
 export async function archivePackage(formData: FormData) {
+  await assertPermission("inventory:write");
+
   const context = await getOperationalContext();
   const id = getText(formData, "packageId");
   const before = await prisma.inventoryPackage.findUniqueOrThrow({ where: { id } });
@@ -203,6 +256,8 @@ export async function archivePackage(formData: FormData) {
 }
 
 export async function adjustPackageQuantity(formData: FormData) {
+  await assertPermission("inventory:write");
+
   const context = await getOperationalContext();
   const packageId = getText(formData, "packageId");
   const delta = getDecimal(getText(formData, "quantityDelta"), "Adjustment quantity");
