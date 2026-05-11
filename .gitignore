@@ -37,3 +37,5 @@ Thumbs.db
 # Legacy/shared-host artifacts
 error_log
 _notes/
+
+tsconfig.tsbuildinfo
