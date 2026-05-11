@@ -1,44 +1,74 @@
 # TrackingTHC
 
-TrackingTHC is a cannabis operations app shell for exploring import review, audit, and reconciliation workflows. It is not a full point-of-sale system, and it is not production SaaS yet.
+TrackingTHC is a cannabis retail operations prototype for exploring package cost visibility, import review, audit trails, reconciliation workflows, and compliance-adjacent data review.
 
-The current MOBY demo surfaces are a static JSON Sidecar Viewer at `/import-review` and a static MOBY Run History viewer at `/moby-runs`. They consume committed sample JSON artifacts and turn the MOBY handoff into visible review workflows.
+It is **not** a full point-of-sale system, and it is **not** production SaaS yet. This repo is a portfolio/demo app shell for proving a practical idea:
 
-## Current Feature
+> Messy cannabis operations data can be turned into structured, reviewable artifacts that operators, finance teams, and technical teams can actually understand.
 
-### `/moby-runs` MOBY Run History Viewer
+The current demo surfaces are:
 
-The MOBY Run History viewer loads committed sample `moby-run-manifest.json` files from:
+- `/moby-runs` — MOBY Mission Control, a static run-manifest viewer.
+- `/import-review` — a static MOBY import sidecar viewer.
+- Older operational prototype pages for inventory, products, sales, audit, and fake Metrc sync concepts.
+
+## MOBY Mission Control
+
+TrackingTHC includes a static demo viewer for MOBY run manifests at:
+
+```text
+/moby-runs
+```
+
+MOBY Mission Control reads committed sample `moby-run-manifest.json` files and displays:
+
+- what each module ran
+- which source files were used
+- which artifacts were produced
+- which warnings need review
+- how each run fits into the broader MOBY module ecosystem
+
+The current demo uses a fictional **Desert Bloom Retail - Las Vegas** scenario across four MOBY-compatible modules:
+
+| Module | Category | Purpose |
+|---|---|---|
+| `trackingthc-import-mapper` | Import / Data Normalization | Normalizes messy POS/package exports into reviewable artifacts. |
+| `invoice-cost-spreader` | Costing / COGS | Allocates invoice-level costs and discounts for landed-cost review. |
+| `cannabis-approval-router` | Approvals / Decision Routing | Routes operational approval requests with evidence-aware warnings. |
+| `cannabis-shift-handoff` | Handoffs / Operational Memory | Turns messy shift notes into structured follow-up items. |
+
+The viewer is intentionally read-only and static for this slice. It does not use uploads, background jobs, API ingestion, local folder scanning, or database persistence.
+
+![MOBY Mission Control](./public/screenshots/moby-runs-mission-control.png)
+
+## What `/moby-runs` shows
+
+The MOBY Run History viewer loads committed sample manifests from:
 
 ```text
 public/samples/moby-run-manifests/
 ```
 
-It also loads static demo module metadata from:
+It also loads static module display metadata from:
 
 ```text
 public/samples/moby-module-registry.json
 ```
 
-Local route:
+The page displays:
 
-```text
-http://localhost:3000/moby-runs
-```
+- Run metadata: `runId`, `runType`, `generatedBy`, `status`, and `generatedAt`
+- Summary counts: total runs, module count, warning count, and artifact count
+- Friendly module labels, categories, descriptions, and business purpose
+- Source info: system, source file name, source path, and received timestamp
+- Artifacts: label, role, format, path, and artifact ID
+- Warnings: severity, code, field, row number, linked artifact, and message
+- Compact metadata for the selected run
+- Module and status filters for exploring the demo data
 
-The viewer displays:
+The module registry is display metadata only. It does not replace `moby-run-manifest.json`, and unknown modules still render using manifest data.
 
-- Run metadata: `runId`, `runType`, `generatedBy`, `status`, and `generatedAt`.
-- Summary counts: total runs, module count, warning count, and artifact count.
-- Source info: system, source file name, source path, and received timestamp.
-- Artifacts: label, role, format, path, and artifact ID.
-- Warnings: severity, code, field, row number, linked artifact, and message.
-- Compact metadata for the selected run.
-- Friendly module labels, categories, descriptions, and business purpose when a module is listed in the static registry.
-
-This is a static portfolio/demo viewer. The module registry is display metadata only; it does not replace `moby-run-manifest.json`, and unknown modules still render from manifest data. The viewer is not a database-backed ingestion system, does not scan local run folders, and does not upload or persist manifests.
-
-### `/import-review` MOBY JSON Sidecar Viewer
+## `/import-review` MOBY JSON Sidecar Viewer
 
 The Import Review Viewer loads a sample MOBY sidecar from:
 
@@ -49,44 +79,119 @@ public/samples/moby-import-example.json
 Local route:
 
 ```text
-http://localhost:3000/import-review
+/import-review
 ```
 
 The viewer displays:
 
-- Schema metadata: `schemaVersion`, `generatedBy`, and `generatedAt`.
-- Import summary: run ID, source, status, row count, warning count, package count, and source file.
-- Mapping profile: source fields, canonical MOBY fields, and mapping status.
-- Validation issues: severity, code, field, row number, and message.
-- Packages: package label, product name, quantity, unit cost, total cost, and vendor.
+- Schema metadata: `schemaVersion`, `generatedBy`, and `generatedAt`
+- Import summary: run ID, source, status, row count, warning count, package count, and source file
+- Mapping profile: source fields, canonical MOBY fields, and mapping status
+- Validation issues: severity, code, field, row number, and message
+- Packages: package label, product name, quantity, unit cost, total cost, and vendor
 
-## Ecosystem Architecture
+## Viewer difference
 
-TrackingTHC is part of a small MOBY import ecosystem:
+`/import-review` and `/moby-runs` are related, but they answer different questions.
+
+| Route | Reads | Focus |
+|---|---|---|
+| `/import-review` | `moby-import.json` | One import workflow: mappings, validation issues, packages, and sidecar contents. |
+| `/moby-runs` | `moby-run-manifest.json` | Run history across MOBY modules: run metadata, sources, artifacts, warnings, and summary counts. |
+
+Neither route stores uploaded files or writes database records in the current demo slice.
+
+## MOBY-compatible module pattern
+
+A MOBY-compatible module does useful work, writes its normal output artifact, and emits a `moby-run-manifest.json` receipt describing the run.
+
+The pattern is intentionally boring:
+
+1. Preserve existing behavior.
+2. Add explicit artifact output mode when needed.
+3. Write the module's normal result artifact unchanged.
+4. Write `moby-run-manifest.json` next to it.
+5. Keep module-specific business logic inside the module.
+6. Use `moby-core` as the shared contract language.
+7. Avoid surprise file output.
+8. Test both old behavior and run-output behavior.
+
+Current aligned modules:
+
+| Module | Role | MOBY artifact behavior |
+|---|---|---|
+| `moby-core` | Shared TypeScript contracts | Defines run manifest, artifact, warning, source, summary, audit/workflow, and domain types. |
+| `trackingthc-import-mapper` | Data normalization | Emits normalized import outputs and `moby-run-manifest.json`. |
+| `invoice-cost-spreader` | Cost allocation / COGS | Emits `spread-result.json` and `moby-run-manifest.json`. |
+| `cannabis-approval-router` | Approval decision routing | Emits `approval-result.json` and `moby-run-manifest.json`. |
+| `cannabis-shift-handoff` | Operational handoff memory | Emits handoff output and `moby-run-manifest.json`. |
+
+## Ecosystem architecture
+
+TrackingTHC is the viewer/app shell for the MOBY demo ecosystem.
 
 ```text
-moby-core -> trackingthc-import-mapper -> trackingthc.com
+moby-core
+  -> trackingthc-import-mapper
+  -> invoice-cost-spreader
+  -> cannabis-approval-router
+  -> cannabis-shift-handoff
+  -> trackingthc.com
 ```
 
-- `moby-core` defines the shared contracts and vocabulary for MOBY import artifacts.
+- `moby-core` defines the shared contracts and vocabulary.
 - MOBY-compatible modules emit `moby-run-manifest.json` files that describe module runs, sources, artifacts, warnings, and summary counts.
-- `trackingthc-import-mapper` reads source exports, applies mappings, validates rows, and generates versioned MOBY JSON sidecars.
-- `trackingthc.com` consumes those sidecars and run manifests and displays them for review, audit prep, and future reconciliation workflows.
+- `trackingthc-import-mapper` also emits `moby-import.json` sidecars for import review.
+- `trackingthc.com` consumes committed sample sidecars and run manifests and displays them for review, audit prep, and future reconciliation workflows.
 
-This repo is the consuming app. It should not need to understand mapper internals; it only needs the versioned sidecar and run manifest contracts.
+This repo should not need to understand each module's internals. It only needs versioned artifacts and manifest contracts.
 
-## Current Status
+## Demo routes
+
+| Route | Description |
+|---|---|
+| `/dashboard` | Main operational dashboard. |
+| `/moby-runs` | Static MOBY run manifest viewer / Mission Control. |
+| `/import-review` | Static import sidecar review page. |
+| `/inventory` | Inventory-oriented demo pages. |
+| `/products` | Product-oriented demo pages. |
+| `/sales` | Sales demo page. |
+| `/sync-status` | Sync status demo page. |
+| `/audit` | Audit trail demo page. |
+
+## Current status
 
 - Static/client-side import review is working.
 - Static/client-side MOBY run history is available at `/moby-runs`.
-- No auth is required for `/import-review`.
-- No database is required for `/import-review` or `/moby-runs`.
-- Sample import sidecar JSON is served from `public/samples/moby-import-example.json`.
-- Sample run manifest JSON is served from `public/samples/moby-run-manifests/`.
-- Static module display metadata is served from `public/samples/moby-module-registry.json`.
-- The pages currently use bundled samples rather than a selector, upload flow, local folder scanning, or persisted import history.
+- `/moby-runs` uses a connected Desert Bloom Retail demo scenario.
+- `/moby-runs` loads static module registry metadata for friendly labels and categories.
+- No auth is required for `/import-review` or `/moby-runs`.
+- No database setup is required for `/import-review` or `/moby-runs`.
+- The pages currently use bundled samples rather than upload flows, local folder scanning, or persisted import history.
 
-## Local Development
+## Static sample files
+
+Sample MOBY run manifests live in:
+
+```text
+public/samples/moby-run-manifests/
+```
+
+Module display metadata lives in:
+
+```text
+public/samples/moby-module-registry.json
+```
+
+Sample MOBY import sidecar lives at:
+
+```text
+public/samples/moby-import-example.json
+```
+
+These files power the demo pages without requiring database setup.
+
+## Local development
 
 Install dependencies:
 
@@ -100,50 +205,81 @@ Start the dev server:
 npm run dev
 ```
 
-Open the Import Review Viewer:
+Open the app:
 
 ```text
-http://localhost:3000/import-review
+http://localhost:3000
 ```
 
-Open the MOBY Run History Viewer:
+Open MOBY Mission Control directly:
 
 ```text
 http://localhost:3000/moby-runs
 ```
 
-Create a production build:
+Open the Import Review Viewer directly:
+
+```text
+http://localhost:3000/import-review
+```
+
+## Verification
+
+Run the local checks:
 
 ```powershell
+npm run typecheck
+npm run lint
 npm run build
 ```
 
-Some older operational prototype pages use Prisma/PostgreSQL and environment variables. The `/import-review` and `/moby-runs` pages do not require database setup.
-
-## Tech Stack
+## Tech stack
 
 - Next.js App Router
 - React
 - TypeScript
 - Tailwind CSS
 - Prisma/PostgreSQL for earlier operational prototype areas
+- Static JSON samples for the current MOBY demo slice
+
+## Current scope
+
+This project is a portfolio/demo prototype. The MOBY Mission Control page currently reads committed static sample files from `public/samples/`. It is not yet a production ingestion system.
+
+Intentionally not included in this slice:
+
+- Upload flows
+- Background jobs
+- API ingestion for run manifests
+- Database persistence for MOBY runs
+- Auth changes
+- File-system scanning of generated run folders
+- A full POS workflow
+- A production compliance integration
 
 ## Roadmap
 
-- Sample selector for multiple generated MOBY sidecars.
-- Upload local MOBY JSON sidecar.
-- Manifest selector or local-file review for MOBY run history.
-- Reconciliation prep workflow.
-- Finance review workflow.
+Near-term ideas:
 
-## Viewer Difference
+- Keep improving the `/moby-runs` demo experience.
+- Add more screenshots and demo notes for the MOBY workflow.
+- Create one generated end-to-end sample chain from real module outputs.
+- Add a sample selector for multiple generated MOBY sidecars.
+- Add a manifest selector or local-file review mode for MOBY run history.
+- Explore a database-backed MOBY run history only after the static demo proves the workflow.
 
-`/import-review` reads a `moby-import.json` sidecar and focuses on one import review workflow: mappings, validation issues, and packages.
+Future workflow ideas:
 
-`/moby-runs` reads `moby-run-manifest.json` files and focuses on module run history: run metadata, sources, artifacts, warnings, and compact metadata across multiple MOBY-compatible modules.
+- Reconciliation prep workflow
+- Finance review workflow
+- Package cost review workflow
+- Approval trail review workflow
+- Shift handoff review workflow
 
-Neither route stores uploaded files or writes database records in the current demo slice.
+## Why this exists
 
-## Notes
+Cannabis retail operations generate messy data across POS exports, invoices, approvals, shift notes, compliance systems, and human workflows.
 
-TrackingTHC began as a cannabis retail operations prototype with product, package, adjustment, audit log, and fake Metrc sync concepts. The current documentation focus is the MOBY import review loop: proving that `trackingthc-import-mapper` can generate a real sidecar and `trackingthc.com` can display it clearly for human review.
+TrackingTHC explores a small, practical path toward making those workflows more visible, auditable, and explainable.
+
+MOBY is the guide dog for the chaos: it does not replace the operator, but it leaves clean paw-print receipts for what happened.
