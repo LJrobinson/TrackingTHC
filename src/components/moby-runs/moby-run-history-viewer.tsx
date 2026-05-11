@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 const INDEX_PATH = "/samples/moby-run-manifests/index.json";
+const MODULE_REGISTRY_PATH = "/samples/moby-module-registry.json";
 const FALLBACK = "-";
 const ALL_FILTER = "all";
 
@@ -79,6 +80,21 @@ type LoadedRun = {
   manifest: MobyRunManifest;
 };
 
+type MobyModuleRegistryEntry = {
+  module?: string;
+  displayName?: string;
+  category?: string;
+  description?: string;
+  shortLabel?: string;
+  businessPurpose?: string;
+};
+
+type MobyModuleRegistry = Record<string, MobyModuleRegistryEntry>;
+
+type MobyModuleRegistryPayload = {
+  modules?: MobyModuleRegistry | MobyModuleRegistryEntry[];
+};
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -98,6 +114,26 @@ function getSampleEntries(payload: unknown): SampleIndexEntry[] {
   }
 
   return [];
+}
+
+function isRegistryEntry(value: unknown): value is MobyModuleRegistryEntry {
+  return isRecord(value) && typeof value.module === "string" && value.module.trim().length > 0;
+}
+
+function getModuleRegistry(payload: unknown): MobyModuleRegistry {
+  const entries = isRecord(payload) && "modules" in payload ? (payload as MobyModuleRegistryPayload).modules : payload;
+
+  if (Array.isArray(entries)) {
+    return Object.fromEntries(entries.filter(isRegistryEntry).map((entry) => [entry.module as string, entry]));
+  }
+
+  if (!isRecord(entries)) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(entries).filter(([, value]) => isRecord(value)).map(([module, value]) => [module, value as MobyModuleRegistryEntry])
+  );
 }
 
 function display(value: unknown) {
@@ -191,12 +227,39 @@ function getPrimarySourceFile(manifest: MobyRunManifest) {
   );
 }
 
-function getModuleLabel(run: LoadedRun) {
-  return run.sample.label ?? run.manifest.generatedBy ?? run.manifest.runType ?? run.sample.module ?? FALLBACK;
-}
-
 function getRunModuleValue(run: LoadedRun) {
   return run.sample.module ?? run.manifest.generatedBy ?? run.manifest.runType ?? "unknown";
+}
+
+function getModuleRegistryEntry(run: LoadedRun, registry: MobyModuleRegistry) {
+  const candidates = [run.sample.module, run.manifest.generatedBy, getRunModuleValue(run), run.manifest.runType].filter(
+    (value): value is string => typeof value === "string" && value.trim().length > 0
+  );
+
+  for (const candidate of candidates) {
+    const entry = registry[candidate];
+
+    if (entry) {
+      return entry;
+    }
+  }
+
+  return undefined;
+}
+
+function getModuleDisplayName(run: LoadedRun, registry: MobyModuleRegistry) {
+  const entry = getModuleRegistryEntry(run, registry);
+  return entry?.displayName ?? run.sample.label ?? run.manifest.generatedBy ?? run.manifest.runType ?? run.sample.module ?? FALLBACK;
+}
+
+function getModuleShortLabel(run: LoadedRun, registry: MobyModuleRegistry) {
+  const entry = getModuleRegistryEntry(run, registry);
+  return entry?.shortLabel ?? entry?.displayName ?? run.manifest.generatedBy ?? run.manifest.runType ?? run.sample.module ?? FALLBACK;
+}
+
+function getModuleCategory(run: LoadedRun, registry: MobyModuleRegistry) {
+  const entry = getModuleRegistryEntry(run, registry);
+  return entry?.category ?? run.manifest.runType ?? FALLBACK;
 }
 
 function getRunStatusValue(run: LoadedRun) {
@@ -260,6 +323,17 @@ function StatusBadge({ status }: { status: unknown }) {
       title={titleValue(status)}
     >
       <span className="truncate">{display(status)}</span>
+    </span>
+  );
+}
+
+function CategoryBadge({ label, title }: { label: unknown; title?: unknown }) {
+  return (
+    <span
+      className="inline-flex max-w-[12rem] rounded-full border border-ink/10 bg-cream px-2.5 py-1 text-xs font-semibold text-ink/70"
+      title={titleValue(title ?? label)}
+    >
+      <span className="truncate">{display(label)}</span>
     </span>
   );
 }
@@ -441,8 +515,23 @@ function MetadataSummary({ metadata }: { metadata: MetadataRecord | undefined })
   );
 }
 
+async function loadModuleRegistry(): Promise<MobyModuleRegistry> {
+  try {
+    const response = await fetch(MODULE_REGISTRY_PATH);
+
+    if (!response.ok) {
+      return {};
+    }
+
+    return getModuleRegistry((await response.json()) as unknown);
+  } catch {
+    return {};
+  }
+}
+
 export function MobyRunHistoryViewer() {
   const [runs, setRuns] = useState<LoadedRun[]>([]);
+  const [moduleRegistry, setModuleRegistry] = useState<MobyModuleRegistry>({});
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [moduleFilter, setModuleFilter] = useState(ALL_FILTER);
   const [statusFilter, setStatusFilter] = useState(ALL_FILTER);
@@ -467,23 +556,26 @@ export function MobyRunHistoryViewer() {
           throw new Error("Manifest index did not include any sample manifest paths.");
         }
 
-        const loadedRuns = await Promise.all(
-          entries.map(async (entry) => {
-            const path = entry.path?.trim() ?? "";
-            const manifestResponse = await fetch(path);
+        const runPromises = entries.map(async (entry) => {
+          const path = entry.path?.trim() ?? "";
+          const manifestResponse = await fetch(path);
 
-            if (!manifestResponse.ok) {
-              throw new Error(`Unable to load sample manifest ${path} (${manifestResponse.status}).`);
-            }
+          if (!manifestResponse.ok) {
+            throw new Error(`Unable to load sample manifest ${path} (${manifestResponse.status}).`);
+          }
 
-            const manifest = (await manifestResponse.json()) as MobyRunManifest;
+          const manifest = (await manifestResponse.json()) as MobyRunManifest;
 
-            return { sample: entry, path, manifest };
-          })
-        );
+          return { sample: entry, path, manifest };
+        });
+        const [loadedRuns, loadedRegistry] = await Promise.all([
+          Promise.all(runPromises),
+          loadModuleRegistry()
+        ]);
 
         if (isMounted) {
           setRuns(loadedRuns);
+          setModuleRegistry(loadedRegistry);
           setSelectedPath(loadedRuns[0]?.path ?? null);
           setError(null);
         }
@@ -524,11 +616,11 @@ export function MobyRunHistoryViewer() {
     const options = new Map<string, string>();
 
     for (const run of runs) {
-      options.set(getRunModuleValue(run), getModuleLabel(run));
+      options.set(getRunModuleValue(run), getModuleDisplayName(run, moduleRegistry));
     }
 
     return Array.from(options.entries()).map(([value, label]) => ({ value, label }));
-  }, [runs]);
+  }, [moduleRegistry, runs]);
 
   const statusOptions = useMemo(() => Array.from(new Set(runs.map(getRunStatusValue))).sort(), [runs]);
 
@@ -572,6 +664,11 @@ export function MobyRunHistoryViewer() {
   const selectedSources = selectedManifest ? getSources(selectedManifest) : [];
   const selectedArtifacts = selectedManifest ? getArtifacts(selectedManifest) : [];
   const selectedWarnings = selectedManifest ? getWarnings(selectedManifest) : [];
+  const selectedModuleEntry = selectedRun ? getModuleRegistryEntry(selectedRun, moduleRegistry) : undefined;
+  const selectedDisplayName = selectedRun ? getModuleDisplayName(selectedRun, moduleRegistry) : FALLBACK;
+  const selectedCategory = selectedRun ? getModuleCategory(selectedRun, moduleRegistry) : FALLBACK;
+  const selectedDescription = selectedModuleEntry?.description ?? selectedRun?.sample.description;
+  const selectedBusinessPurpose = selectedModuleEntry?.businessPurpose;
 
   return (
     <div className="space-y-6">
@@ -641,12 +738,13 @@ export function MobyRunHistoryViewer() {
           <p className="rounded-md border border-ink/10 px-3 py-2 text-sm text-ink/60">{filteredRuns.length} shown</p>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1180px] border-collapse text-left text-sm">
+          <table className="w-full min-w-[1280px] border-collapse text-left text-sm">
             <thead>
               <tr className="border-b border-ink/10 text-xs uppercase text-ink/50">
                 <th className="py-3 pl-5 pr-4">Run ID</th>
+                <th className="py-3 pr-4">Module</th>
+                <th className="py-3 pr-4">Category</th>
                 <th className="py-3 pr-4">Run type</th>
-                <th className="py-3 pr-4">Generated by</th>
                 <th className="py-3 pr-4">Status</th>
                 <th className="py-3 pr-4">Generated at</th>
                 <th className="py-3 pr-4">Warnings</th>
@@ -657,7 +755,7 @@ export function MobyRunHistoryViewer() {
             <tbody>
               {filteredRuns.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-5 py-5">
+                  <td colSpan={9} className="px-5 py-5">
                     <EmptyState message="No sample manifests match the current filters." />
                   </td>
                 </tr>
@@ -674,10 +772,13 @@ export function MobyRunHistoryViewer() {
                       </button>
                     </td>
                     <td className="py-4 pr-4">
-                      <TruncatedText value={manifest.runType} className="max-w-[14rem] font-mono text-xs text-ink/70" />
+                      <TruncatedText value={getModuleDisplayName(run, moduleRegistry)} className="max-w-[16rem] font-semibold text-ink" />
                     </td>
                     <td className="py-4 pr-4">
-                      <TruncatedText value={manifest.generatedBy} className="max-w-[14rem] text-ink/70" />
+                      <CategoryBadge label={getModuleShortLabel(run, moduleRegistry)} title={getModuleCategory(run, moduleRegistry)} />
+                    </td>
+                    <td className="py-4 pr-4">
+                      <TruncatedText value={manifest.runType} className="max-w-[14rem] font-mono text-xs text-ink/70" />
                     </td>
                     <td className="py-4 pr-4">
                       <StatusBadge status={manifest.status} />
@@ -701,11 +802,20 @@ export function MobyRunHistoryViewer() {
           <section className="rounded-lg border border-ink/10 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="min-w-0">
-                <p className="text-sm font-medium text-moss">{getModuleLabel(selectedRun)}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-sm font-medium text-moss">{selectedDisplayName}</p>
+                  <CategoryBadge label={selectedModuleEntry?.shortLabel ?? selectedCategory} title={selectedCategory} />
+                </div>
                 <h2 className="mt-1 break-words text-lg font-semibold text-ink">{display(selectedManifest.runId)}</h2>
                 <p className="mt-1 text-sm text-ink/60">
                   {display(selectedManifest.runType)} generated by {display(selectedManifest.generatedBy)}.
                 </p>
+                {selectedDescription ? <p className="mt-3 max-w-3xl text-sm leading-6 text-ink/70">{selectedDescription}</p> : null}
+                {selectedBusinessPurpose ? (
+                  <p className="mt-2 max-w-3xl text-sm leading-6 text-ink/60">
+                    <span className="font-semibold text-ink">Business purpose:</span> {selectedBusinessPurpose}
+                  </p>
+                ) : null}
               </div>
               <div className="grid gap-3 text-sm sm:grid-cols-4">
                 <div>
