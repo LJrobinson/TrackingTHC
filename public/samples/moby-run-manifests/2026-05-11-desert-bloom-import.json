@@ -1,0 +1,153 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "2026-05-11-desert-bloom-import",
+  "runType": "trackingthc_import",
+  "generatedBy": "trackingthc-import-mapper",
+  "generatedAt": "2026-05-11T13:10:00.000Z",
+  "startedAt": "2026-05-11T13:10:00.000Z",
+  "completedAt": "2026-05-11T13:10:08.000Z",
+  "status": "completed_with_warnings",
+  "sources": [
+    {
+      "system": "korona",
+      "name": "Desert Bloom package export",
+      "fileName": "desert-bloom-korona-packages-2026-05-11.csv",
+      "filePath": "samples/desert-bloom/desert-bloom-korona-packages-2026-05-11.csv",
+      "receivedAt": "2026-05-11T13:09:30.000Z",
+      "metadata": {
+        "facility": "Desert Bloom Retail - Las Vegas",
+        "businessDate": "2026-05-11",
+        "rowCount": 4,
+        "sourceNote": "Sample POS export used for MOBY Mission Control demo."
+      }
+    },
+    {
+      "system": "manual",
+      "name": "Korona mapping profile",
+      "fileName": "desert-bloom-korona-mapping.json",
+      "filePath": "samples/desert-bloom/desert-bloom-korona-mapping.json",
+      "receivedAt": "2026-05-11T13:09:30.000Z",
+      "metadata": {
+        "mappingProfile": "korona-package-cost-v1"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "artifact_normalized_csv",
+      "role": "output",
+      "path": "output/runs/2026-05-11-desert-bloom-import/normalized.csv",
+      "format": "csv",
+      "label": "Normalized package output",
+      "mediaType": "text/csv",
+      "metadata": {
+        "rows": 4
+      }
+    },
+    {
+      "id": "artifact_warnings_csv",
+      "role": "warnings",
+      "path": "output/runs/2026-05-11-desert-bloom-import/warnings.csv",
+      "format": "csv",
+      "label": "Import warnings",
+      "mediaType": "text/csv",
+      "metadata": {
+        "rows": 2
+      }
+    },
+    {
+      "id": "artifact_summary_md",
+      "role": "summary",
+      "path": "output/runs/2026-05-11-desert-bloom-import/summary.md",
+      "format": "markdown",
+      "label": "Human review summary",
+      "mediaType": "text/markdown"
+    },
+    {
+      "id": "artifact_run_manifest_json",
+      "role": "manifest",
+      "path": "output/runs/2026-05-11-desert-bloom-import/run-manifest.json",
+      "format": "json",
+      "label": "Mapper-local run manifest",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "artifact_run_index_json",
+      "role": "other",
+      "path": "output/runs/index.json",
+      "format": "json",
+      "label": "Run index",
+      "mediaType": "application/json",
+      "metadata": {
+        "kind": "run_index"
+      }
+    },
+    {
+      "id": "artifact_moby_import_json",
+      "role": "sidecar",
+      "path": "output/runs/2026-05-11-desert-bloom-import/moby-import.json",
+      "format": "json",
+      "label": "MOBY import sidecar",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "artifact_moby_run_manifest_json",
+      "role": "manifest",
+      "path": "output/runs/2026-05-11-desert-bloom-import/moby-run-manifest.json",
+      "format": "json",
+      "label": "MOBY run manifest",
+      "mediaType": "application/json"
+    }
+  ],
+  "warnings": [
+    {
+      "code": "INVALID_TOTAL_COST",
+      "severity": "warning",
+      "message": "Package DB-PR-11894 has a total cost value that could not be parsed cleanly.",
+      "artifactId": "artifact_warnings_csv",
+      "field": "package.totalCost",
+      "rowNumber": 3,
+      "metadata": {
+        "productName": "Desert Bloom Pre-Rolls - Old Batch 11894",
+        "packageId": "DB-PR-11894",
+        "quantity": "24",
+        "totalCost": "$--"
+      }
+    },
+    {
+      "code": "UNIT_COST_NOT_CALCULATED",
+      "severity": "warning",
+      "message": "Unit cost was not calculated for DB-PR-11894 because total cost was invalid.",
+      "artifactId": "artifact_warnings_csv",
+      "field": "package.unitCost",
+      "rowNumber": 3,
+      "metadata": {
+        "productName": "Desert Bloom Pre-Rolls - Old Batch 11894",
+        "packageId": "DB-PR-11894"
+      }
+    }
+  ],
+  "summary": {
+    "processedCount": 4,
+    "successCount": 4,
+    "warningCount": 2,
+    "errorCount": 0,
+    "artifactCount": 7,
+    "metadata": {
+      "unitCostsCalculated": 3,
+      "sourceSystem": "korona"
+    }
+  },
+  "metadata": {
+    "facility": "Desert Bloom Retail - Las Vegas",
+    "businessDate": "2026-05-11",
+    "sourceFile": "samples/desert-bloom/desert-bloom-korona-packages-2026-05-11.csv",
+    "mappingFile": "samples/desert-bloom/desert-bloom-korona-mapping.json",
+    "outputFile": "output/runs/2026-05-11-desert-bloom-import/normalized.csv",
+    "warningsFile": "output/runs/2026-05-11-desert-bloom-import/warnings.csv",
+    "summaryFile": "output/runs/2026-05-11-desert-bloom-import/summary.md",
+    "legacyRunManifestFile": "output/runs/2026-05-11-desert-bloom-import/run-manifest.json",
+    "runIndexFile": "output/runs/index.json",
+    "mobyImportFile": "output/runs/2026-05-11-desert-bloom-import/moby-import.json"
+  }
+}

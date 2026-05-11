@@ -1,0 +1,41 @@
+{
+  "generatedAt": "2026-05-11T14:10:00.000Z",
+  "manifests": [
+    {
+      "label": "Desert Bloom POS Import",
+      "module": "trackingthc-import-mapper",
+      "description": "Korona package export normalization for Desert Bloom Retail with warning and review artifacts.",
+      "path": "/samples/moby-run-manifests/2026-05-11-desert-bloom-import.json"
+    },
+    {
+      "label": "Desert Bloom Invoice Costing",
+      "module": "invoice-cost-spreader",
+      "description": "Rythm vendor invoice allocation for Desert Bloom Retail landed-cost review.",
+      "path": "/samples/moby-run-manifests/2026-05-11-desert-bloom-invoice-costing.json"
+    },
+    {
+      "label": "Desert Bloom Approval Route",
+      "module": "cannabis-approval-router",
+      "description": "Store supplies approval routing for Aly with required evidence warning.",
+      "path": "/samples/moby-run-manifests/2026-05-11-desert-bloom-approval-route.json"
+    },
+    {
+      "label": "Desert Bloom Shift Handoff",
+      "module": "cannabis-shift-handoff",
+      "description": "End-of-shift handoff summary connecting cash, vendor, compliance, maintenance, and customer follow-ups.",
+      "path": "/samples/moby-run-manifests/2026-05-11-desert-bloom-shift-handoff.json"
+    },
+    {
+      "label": "Generated Import Mapper Run",
+      "module": "trackingthc-import-mapper",
+      "description": "Real generated MOBY run manifest copied from trackingthc-import-mapper.",
+      "path": "/samples/moby-run-manifests/generated/generated-desert-bloom-import.json"
+    },
+    {
+      "label": "Generated Invoice Costing Run",
+      "module": "invoice-cost-spreader",
+      "description": "Real generated MOBY run manifest copied from invoice-cost-spreader.",
+      "path": "/samples/moby-run-manifests/generated/generated-desert-bloom-invoice-costing.json"
+    }
+  ]
+}
