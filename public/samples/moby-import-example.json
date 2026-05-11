@@ -1,10 +1,9 @@
 {
   "mappingProfile": {
-    "id": "map-korona-demo-001",
-    "name": "Korona Inventory Import Demo",
-    "sourceSystem": "korona",
-    "version": "2026.05-demo",
-    "createdAt": "2026-05-10T18:30:00.000Z",
+    "id": "real-moby-demo-002-mapping-profile",
+    "name": "korona import mapping",
+    "source": "korona",
+    "createdAt": "2026-05-11T04:20:21.566Z",
     "mappings": [
       {
         "sourceField": "Item Name",
@@ -34,65 +33,162 @@
     ]
   },
   "importRun": {
-    "id": "run-korona-demo-20260510-001",
-    "sourceSystem": "korona",
+    "id": "real-moby-demo-002",
+    "source": "korona",
     "status": "completed_with_warnings",
-    "rowsProcessed": 24,
-    "warningCount": 1,
-    "packageCount": 2,
-    "sourceFile": "korona-inventory-export-2026-05-10.csv",
-    "startedAt": "2026-05-10T18:31:12.000Z",
-    "completedAt": "2026-05-10T18:31:19.000Z",
+    "filename": "samples/korona-export-money-example.csv",
+    "startedAt": "2026-05-11T04:20:21.566Z",
+    "completedAt": "2026-05-11T04:20:21.566Z",
+    "summary": {
+      "rowCount": 4,
+      "successCount": 4,
+      "warningCount": 2,
+      "errorCount": 0
+    },
     "metadata": {
-      "mapper": "trackingthc-import-mapper",
-      "artifactType": "moby-import",
-      "environment": "demo"
+      "sourceFile": "samples/korona-export-money-example.csv",
+      "mappingFile": "samples/korona-mapping.json",
+      "outputFile": "output\\runs\\real-moby-demo-002\\normalized.csv",
+      "warningsFile": "output\\runs\\real-moby-demo-002\\warnings.csv",
+      "unitCostsCalculated": 3,
+      "originalStatus": "success"
     }
   },
   "validationIssues": [
     {
+      "code": "INVALID_TOTAL_COST",
       "severity": "warning",
-      "code": "MISSING_VENDOR_LICENSE",
-      "field": "Vendor",
-      "rowNumber": 17,
-      "message": "Vendor name was mapped, but no vendor license value was present in the source export."
+      "message": "Total cost is not a valid number.",
+      "rowNumber": 5,
+      "field": "package.totalCost",
+      "metadata": {
+        "productName": "Bad Cost Example",
+        "packageId": "1A406030000888",
+        "quantity": "10",
+        "totalCost": "N/A"
+      }
+    },
+    {
+      "code": "UNIT_COST_NOT_CALCULATED",
+      "severity": "warning",
+      "message": "Unit cost could not be calculated.",
+      "rowNumber": 5,
+      "field": "package.unitCost",
+      "metadata": {
+        "productName": "Bad Cost Example",
+        "packageId": "1A406030000888",
+        "quantity": "10",
+        "totalCost": "N/A"
+      }
     }
   ],
   "packages": [
     {
-      "id": "pkg-korona-1001",
-      "label": "KOR-PKG-1001",
-      "product": {
-        "name": "Blue Dream Flower 3.5g"
+      "id": "package_1A406030000123",
+      "label": "1A406030000123",
+      "quantity": {
+        "value": 20,
+        "unit": "each"
       },
-      "quantity": 18,
-      "unitOfMeasure": "each",
-      "unitCost": 12.5,
-      "totalCost": 225,
-      "vendor": {
-        "name": "Desert Bloom Cultivation"
+      "unitCost": {
+        "amount": 20,
+        "currency": "USD"
       },
+      "totalCost": {
+        "amount": 400,
+        "currency": "USD"
+      },
+      "externalReferences": [
+        {
+          "system": "korona",
+          "externalId": "samples/korona-export-money-example.csv:2",
+          "label": "Normalized row reference"
+        }
+      ],
       "metadata": {
-        "sourceRow": 4,
-        "sourceSku": "BD-35G"
+        "productName": "Blue Dream 3.5g",
+        "vendorName": "Some Vendor",
+        "rowNumber": 2,
+        "sourceFile": "samples/korona-export-money-example.csv"
       }
     },
     {
-      "id": "pkg-korona-1002",
-      "label": "KOR-PKG-1002",
-      "product": {
-        "name": "Citrus Hash Rosin 1g"
+      "id": "package_1A406030000456",
+      "label": "1A406030000456",
+      "quantity": {
+        "value": 50,
+        "unit": "each"
       },
-      "quantity": 9,
-      "unitOfMeasure": "each",
-      "unitCost": 21,
-      "totalCost": 189,
-      "vendor": {
-        "name": "Silver State Extracts"
+      "unitCost": {
+        "amount": 25,
+        "currency": "USD"
       },
+      "totalCost": {
+        "amount": 1250,
+        "currency": "USD"
+      },
+      "externalReferences": [
+        {
+          "system": "korona",
+          "externalId": "samples/korona-export-money-example.csv:3",
+          "label": "Normalized row reference"
+        }
+      ],
       "metadata": {
-        "sourceRow": 11,
-        "sourceSku": "CHR-1G"
+        "productName": "Gelato Pre-Roll",
+        "vendorName": "Another Vendor",
+        "rowNumber": 3,
+        "sourceFile": "samples/korona-export-money-example.csv"
+      }
+    },
+    {
+      "id": "package_1A406030000777",
+      "label": "1A406030000777",
+      "quantity": {
+        "value": 1,
+        "unit": "each"
+      },
+      "unitCost": {
+        "amount": -42,
+        "currency": "USD"
+      },
+      "totalCost": {
+        "amount": -42,
+        "currency": "USD"
+      },
+      "externalReferences": [
+        {
+          "system": "korona",
+          "externalId": "samples/korona-export-money-example.csv:4",
+          "label": "Normalized row reference"
+        }
+      ],
+      "metadata": {
+        "productName": "Return Adjustment",
+        "vendorName": "Some Vendor",
+        "rowNumber": 4,
+        "sourceFile": "samples/korona-export-money-example.csv"
+      }
+    },
+    {
+      "id": "package_1A406030000888",
+      "label": "1A406030000888",
+      "quantity": {
+        "value": 10,
+        "unit": "each"
+      },
+      "externalReferences": [
+        {
+          "system": "korona",
+          "externalId": "samples/korona-export-money-example.csv:5",
+          "label": "Normalized row reference"
+        }
+      ],
+      "metadata": {
+        "productName": "Bad Cost Example",
+        "vendorName": "Vendor Goblin",
+        "rowNumber": 5,
+        "sourceFile": "samples/korona-export-money-example.csv"
       }
     }
   ]
