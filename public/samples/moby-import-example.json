@@ -1,0 +1,99 @@
+{
+  "mappingProfile": {
+    "id": "map-korona-demo-001",
+    "name": "Korona Inventory Import Demo",
+    "sourceSystem": "korona",
+    "version": "2026.05-demo",
+    "createdAt": "2026-05-10T18:30:00.000Z",
+    "mappings": [
+      {
+        "sourceField": "Item Name",
+        "canonicalField": "product.name",
+        "status": "mapped"
+      },
+      {
+        "sourceField": "Package ID",
+        "canonicalField": "package.id",
+        "status": "mapped"
+      },
+      {
+        "sourceField": "Qty On Hand",
+        "canonicalField": "package.quantity",
+        "status": "mapped"
+      },
+      {
+        "sourceField": "Total Cost",
+        "canonicalField": "package.totalCost",
+        "status": "mapped"
+      },
+      {
+        "sourceField": "Vendor",
+        "canonicalField": "vendor.name",
+        "status": "mapped"
+      }
+    ]
+  },
+  "importRun": {
+    "id": "run-korona-demo-20260510-001",
+    "sourceSystem": "korona",
+    "status": "completed_with_warnings",
+    "rowsProcessed": 24,
+    "warningCount": 1,
+    "packageCount": 2,
+    "sourceFile": "korona-inventory-export-2026-05-10.csv",
+    "startedAt": "2026-05-10T18:31:12.000Z",
+    "completedAt": "2026-05-10T18:31:19.000Z",
+    "metadata": {
+      "mapper": "trackingthc-import-mapper",
+      "artifactType": "moby-import",
+      "environment": "demo"
+    }
+  },
+  "validationIssues": [
+    {
+      "severity": "warning",
+      "code": "MISSING_VENDOR_LICENSE",
+      "field": "Vendor",
+      "rowNumber": 17,
+      "message": "Vendor name was mapped, but no vendor license value was present in the source export."
+    }
+  ],
+  "packages": [
+    {
+      "id": "pkg-korona-1001",
+      "label": "KOR-PKG-1001",
+      "product": {
+        "name": "Blue Dream Flower 3.5g"
+      },
+      "quantity": 18,
+      "unitOfMeasure": "each",
+      "unitCost": 12.5,
+      "totalCost": 225,
+      "vendor": {
+        "name": "Desert Bloom Cultivation"
+      },
+      "metadata": {
+        "sourceRow": 4,
+        "sourceSku": "BD-35G"
+      }
+    },
+    {
+      "id": "pkg-korona-1002",
+      "label": "KOR-PKG-1002",
+      "product": {
+        "name": "Citrus Hash Rosin 1g"
+      },
+      "quantity": 9,
+      "unitOfMeasure": "each",
+      "unitCost": 21,
+      "totalCost": 189,
+      "vendor": {
+        "name": "Silver State Extracts"
+      },
+      "metadata": {
+        "sourceRow": 11,
+        "sourceSku": "CHR-1G"
+      }
+    }
+  ]
+}
