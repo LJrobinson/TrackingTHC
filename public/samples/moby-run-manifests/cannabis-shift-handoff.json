@@ -1,0 +1,131 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "shift-run-demo-001",
+  "runType": "cannabis_shift_handoff",
+  "generatedBy": "cannabis-shift-handoff",
+  "generatedAt": "2026-05-11T14:07:00.000Z",
+  "status": "completed_with_warnings",
+  "startedAt": "2026-05-11T14:06:42.000Z",
+  "completedAt": "2026-05-11T14:07:00.000Z",
+  "sources": [
+    {
+      "system": "manual",
+      "name": "Shift notes",
+      "fileName": "closing-shift-note.txt",
+      "filePath": "examples/closing-shift-note.txt",
+      "receivedAt": "2026-05-11T14:06:30.000Z",
+      "metadata": {
+        "lineCount": 6,
+        "outputFormat": "markdown"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "artifact_shift_notes_text",
+      "role": "source",
+      "path": "examples/closing-shift-note.txt",
+      "format": "text",
+      "label": "Shift notes",
+      "mediaType": "text/plain"
+    },
+    {
+      "id": "artifact_handoff_output",
+      "role": "output",
+      "path": "handoff-output.md",
+      "format": "markdown",
+      "label": "Shift handoff output",
+      "mediaType": "text/markdown"
+    },
+    {
+      "id": "artifact_moby_run_manifest_json",
+      "role": "manifest",
+      "path": "moby-run-manifest.json",
+      "format": "json",
+      "label": "MOBY run manifest",
+      "mediaType": "application/json"
+    }
+  ],
+  "warnings": [
+    {
+      "code": "HANDOFF_FOLLOW_UP_REQUIRED",
+      "severity": "warning",
+      "message": "Handoff item requires follow-up.",
+      "artifactId": "artifact_handoff_output",
+      "field": "followUpRequired",
+      "metadata": {
+        "itemIndex": 0,
+        "category": "cash",
+        "riskLevel": "medium",
+        "confidence": 0.8,
+        "followUpRequired": true,
+        "text": "drawer 2 was short 18.43",
+        "action": "Verify drawer closeout, cash drop, and register reconciliation."
+      }
+    },
+    {
+      "code": "HANDOFF_HIGH_RISK_ITEM",
+      "severity": "warning",
+      "message": "High-risk handoff item requires review.",
+      "artifactId": "artifact_handoff_output",
+      "field": "riskLevel",
+      "metadata": {
+        "itemIndex": 3,
+        "category": "compliance",
+        "riskLevel": "high",
+        "confidence": 0.8,
+        "followUpRequired": true,
+        "text": "package tag looked inconsistent",
+        "action": "Verify compliance identifiers, package tags, and related records."
+      }
+    },
+    {
+      "code": "HANDOFF_FOLLOW_UP_REQUIRED",
+      "severity": "warning",
+      "message": "Handoff item requires follow-up.",
+      "artifactId": "artifact_handoff_output",
+      "field": "followUpRequired",
+      "metadata": {
+        "itemIndex": 4,
+        "category": "maintenance",
+        "riskLevel": "medium",
+        "confidence": 0.8,
+        "followUpRequired": true,
+        "text": "bathroom sink leaking again",
+        "action": "Notify manager or maintenance contact and track resolution."
+      }
+    }
+  ],
+  "summary": {
+    "processedCount": 6,
+    "successCount": 6,
+    "warningCount": 3,
+    "errorCount": 0,
+    "artifactCount": 3,
+    "metadata": {
+      "outputFormat": "markdown",
+      "followUpCount": 3,
+      "highRiskCount": 1,
+      "unknownCount": 0,
+      "categoryCounts": {
+        "cash": 1,
+        "compliance": 1,
+        "maintenance": 1
+      }
+    }
+  },
+  "metadata": {
+    "inputFile": "examples/closing-shift-note.txt",
+    "outputFile": "output/runs/shift-run-demo-001/handoff-output.md",
+    "outputFormat": "markdown",
+    "itemCount": 6,
+    "followUpCount": 3,
+    "highRiskCount": 1,
+    "unknownCount": 0,
+    "categories": [
+      "cash",
+      "compliance",
+      "maintenance"
+    ]
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "generated-desert-bloom-invoice-costing",
+  "runType": "invoice_cost_spread",
+  "generatedBy": "invoice-cost-spreader",
+  "generatedAt": "2026-05-11T15:39:42.498Z",
+  "status": "completed",
+  "startedAt": "2026-05-11T15:39:42.498Z",
+  "completedAt": "2026-05-11T15:39:42.498Z",
+  "sources": [
+    {
+      "system": "manual",
+      "name": "Invoice cost input",
+      "fileName": "invoice-input.json",
+      "filePath": "examples/invoice-input.json",
+      "receivedAt": "2026-05-11T15:39:42.498Z",
+      "metadata": {
+        "allocationMethod": "unit",
+        "lineCount": 3,
+        "additionalCosts": 180,
+        "discounts": 75
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "artifact_invoice_input_json",
+      "role": "source",
+      "path": "../../../examples/invoice-input.json",
+      "format": "json",
+      "label": "Invoice input",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "artifact_spread_result_json",
+      "role": "output",
+      "path": "spread-result.json",
+      "format": "json",
+      "label": "Spread result",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "artifact_moby_run_manifest_json",
+      "role": "manifest",
+      "path": "moby-run-manifest.json",
+      "format": "json",
+      "label": "MOBY run manifest",
+      "mediaType": "application/json"
+    }
+  ],
+  "warnings": [],
+  "summary": {
+    "processedCount": 3,
+    "successCount": 3,
+    "warningCount": 0,
+    "errorCount": 0,
+    "artifactCount": 3,
+    "metadata": {
+      "allocationMethod": "unit",
+      "totalBaseCost": 1832,
+      "totalQuantity": 277,
+      "additionalCosts": 180,
+      "discounts": 75,
+      "netAdditionalCost": 105
+    }
+  },
+  "metadata": {
+    "inputFile": "examples/invoice-input.json",
+    "outputFile": "output\\runs\\generated-desert-bloom-invoice-costing\\spread-result.json",
+    "lineCount": 3,
+    "allocationMethod": "unit",
+    "totalBaseCost": 1832,
+    "totalQuantity": 277,
+    "additionalCosts": 180,
+    "discounts": 75,
+    "netAdditionalCost": 105
+  }
+}
