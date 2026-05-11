@@ -1,9 +1,12 @@
 {
+  "schemaVersion": "1.0",
+  "generatedBy": "trackingthc-import-mapper",
+  "generatedAt": "2026-05-11T04:33:02.386Z",
   "mappingProfile": {
     "id": "real-moby-demo-002-mapping-profile",
     "name": "korona import mapping",
     "source": "korona",
-    "createdAt": "2026-05-11T04:23:18.151Z",
+    "createdAt": "2026-05-11T04:33:02.386Z",
     "mappings": [
       {
         "sourceField": "Item Name",
@@ -37,8 +40,8 @@
     "source": "korona",
     "status": "completed_with_warnings",
     "filename": "samples/korona-export-money-example.csv",
-    "startedAt": "2026-05-11T04:23:18.151Z",
-    "completedAt": "2026-05-11T04:23:18.151Z",
+    "startedAt": "2026-05-11T04:33:02.386Z",
+    "completedAt": "2026-05-11T04:33:02.386Z",
     "summary": {
       "rowCount": 4,
       "successCount": 4,
