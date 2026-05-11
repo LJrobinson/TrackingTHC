@@ -1,0 +1,36 @@
+{
+  "modules": {
+    "trackingthc-import-mapper": {
+      "module": "trackingthc-import-mapper",
+      "displayName": "TrackingTHC Import Mapper",
+      "category": "Import / Data Normalization",
+      "description": "Normalizes messy cannabis POS/export CSVs into audit-friendly artifacts.",
+      "shortLabel": "Import",
+      "businessPurpose": "Turns inconsistent package/product exports into reviewable structured data."
+    },
+    "invoice-cost-spreader": {
+      "module": "invoice-cost-spreader",
+      "displayName": "Invoice Cost Spreader",
+      "category": "Costing / COGS",
+      "description": "Allocates invoice-level costs and discounts across product or package lines.",
+      "shortLabel": "Costing",
+      "businessPurpose": "Helps explain landed cost and COGS inputs before finance review."
+    },
+    "cannabis-approval-router": {
+      "module": "cannabis-approval-router",
+      "displayName": "Cannabis Approval Router",
+      "category": "Approvals / Decision Routing",
+      "description": "Routes operational requests based on category, risk, amount, role, and evidence.",
+      "shortLabel": "Approval",
+      "businessPurpose": "Reduces verbal approval ambiguity and preserves decision context."
+    },
+    "cannabis-shift-handoff": {
+      "module": "cannabis-shift-handoff",
+      "displayName": "Cannabis Shift Handoff",
+      "category": "Handoffs / Operational Memory",
+      "description": "Converts messy shift notes into categorized follow-up items.",
+      "shortLabel": "Handoff",
+      "businessPurpose": "Preserves operational context between teams and shifts."
+    }
+  }
+}
