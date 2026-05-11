@@ -13,6 +13,7 @@ type MappingEntry = {
 
 type MappingProfile = {
   sourceSystem?: string;
+  source?: string;
   mappings?: MappingEntry[];
 };
 
@@ -21,9 +22,15 @@ type ImportRun = {
   sourceSystem?: string;
   source?: string;
   status?: string;
+  summary?: {
+    rowCount?: number | string;
+    warningCount?: number | string;
+  };
+  metadata?: {
+    sourceFile?: string;
+  };
   rowsProcessed?: number;
   warningCount?: number;
-  packageCount?: number;
   sourceFile?: string;
 };
 
@@ -35,6 +42,22 @@ type ValidationIssue = {
   message?: string;
 };
 
+type Quantity =
+  | number
+  | string
+  | {
+      value?: number | string;
+      unit?: string;
+    };
+
+type Money =
+  | number
+  | string
+  | {
+      amount?: number | string;
+      currency?: string;
+    };
+
 type ImportPackage = {
   id?: string;
   label?: string;
@@ -43,13 +66,17 @@ type ImportPackage = {
   product?: {
     name?: string;
   };
-  quantity?: number;
+  quantity?: Quantity;
   unitOfMeasure?: string;
-  unitCost?: number;
-  totalCost?: number;
+  unitCost?: Money;
+  totalCost?: Money;
   vendorName?: string;
   vendor?: {
     name?: string;
+  };
+  metadata?: {
+    productName?: string;
+    vendorName?: string;
   };
 };
 
@@ -62,26 +89,91 @@ type MobyImportSidecar = {
 
 type SummaryItemProps = {
   label: string;
-  value: string | number | undefined;
+  value: unknown;
 };
 
-function display(value: string | number | null | undefined) {
+function display(value: unknown) {
   if (value === null || value === undefined || value === "") {
+    return FALLBACK;
+  }
+
+  if (typeof value === "object") {
     return FALLBACK;
   }
 
   return String(value);
 }
 
-function formatCurrency(value: number | undefined) {
-  if (typeof value !== "number" || Number.isNaN(value)) {
+function formatQuantity(quantity: Quantity | null | undefined) {
+  if (quantity === null || quantity === undefined || quantity === "") {
     return FALLBACK;
   }
 
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD"
-  }).format(value);
+  if (typeof quantity !== "object") {
+    return String(quantity);
+  }
+
+  const value = display(quantity.value);
+
+  if (value === FALLBACK) {
+    return FALLBACK;
+  }
+
+  return quantity.unit ? `${value} ${quantity.unit}` : value;
+}
+
+function formatMoney(money: Money | null | undefined) {
+  if (money === null || money === undefined || money === "") {
+    return FALLBACK;
+  }
+
+  const formatUsd = (amount: number) =>
+    new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD"
+    }).format(amount);
+
+  if (typeof money === "number") {
+    return formatUsd(money);
+  }
+
+  if (typeof money === "string") {
+    const parsedAmount = Number(money);
+
+    if (Number.isFinite(parsedAmount)) {
+      return formatUsd(parsedAmount);
+    }
+
+    return money;
+  }
+
+  if (typeof money !== "object") {
+    return FALLBACK;
+  }
+
+  const amount = money.amount;
+  const currency = money.currency;
+  const normalizedCurrency = currency?.toUpperCase();
+
+  if (amount === null || amount === undefined || amount === "") {
+    return FALLBACK;
+  }
+
+  const numericAmount = typeof amount === "number" ? amount : Number(amount);
+
+  if (normalizedCurrency === "USD" && Number.isFinite(numericAmount)) {
+    return formatUsd(numericAmount);
+  }
+
+  return currency ? `${display(amount)} ${currency}` : display(amount);
+}
+
+function formatLegacyQuantity(item: ImportPackage) {
+  if (typeof item.quantity === "number" && item.unitOfMeasure) {
+    return `${item.quantity} ${item.unitOfMeasure}`;
+  }
+
+  return formatQuantity(item.quantity);
 }
 
 function SummaryItem({ label, value }: SummaryItemProps) {
@@ -172,7 +264,7 @@ export function ImportReviewViewer() {
   const mappings = Array.isArray(mappingProfile?.mappings) ? mappingProfile.mappings : [];
   const validationIssues = Array.isArray(data?.validationIssues) ? data.validationIssues : [];
   const packages = Array.isArray(data?.packages) ? data.packages : [];
-  const source = importRun?.sourceSystem ?? importRun?.source ?? mappingProfile?.sourceSystem;
+  const source = importRun?.sourceSystem ?? importRun?.source ?? mappingProfile?.sourceSystem ?? mappingProfile?.source;
 
   return (
     <div className="space-y-6">
@@ -185,10 +277,10 @@ export function ImportReviewViewer() {
           <SummaryItem label="Run ID" value={importRun?.id} />
           <SummaryItem label="Source" value={source} />
           <SummaryItem label="Status" value={importRun?.status} />
-          <SummaryItem label="Rows processed" value={importRun?.rowsProcessed} />
-          <SummaryItem label="Warning count" value={importRun?.warningCount ?? validationIssues.length} />
-          <SummaryItem label="Package count" value={importRun?.packageCount ?? packages.length} />
-          <SummaryItem label="Source file" value={importRun?.sourceFile} />
+          <SummaryItem label="Rows processed" value={importRun?.summary?.rowCount ?? importRun?.rowsProcessed} />
+          <SummaryItem label="Warning count" value={importRun?.summary?.warningCount ?? importRun?.warningCount} />
+          <SummaryItem label="Package count" value={packages.length} />
+          <SummaryItem label="Source file" value={importRun?.metadata?.sourceFile ?? importRun?.sourceFile} />
         </div>
       </section>
 
@@ -270,14 +362,15 @@ export function ImportReviewViewer() {
                 {packages.map((item, index) => (
                   <tr key={`${item.id ?? item.label ?? "package"}-${index}`} className="border-b border-ink/10 last:border-0">
                     <td className="py-3 pr-4 font-semibold text-moss">{display(item.label ?? item.packageLabel ?? item.id)}</td>
-                    <td className="py-3 pr-4 text-ink/70">{display(item.product?.name ?? item.productName)}</td>
                     <td className="py-3 pr-4 text-ink/70">
-                      {display(item.quantity)}
-                      {item.unitOfMeasure ? ` ${item.unitOfMeasure}` : ""}
+                      {display(item.metadata?.productName ?? item.product?.name ?? item.productName)}
                     </td>
-                    <td className="py-3 pr-4 text-ink/70">{formatCurrency(item.unitCost)}</td>
-                    <td className="py-3 pr-4 text-ink/70">{formatCurrency(item.totalCost)}</td>
-                    <td className="py-3 pr-4 text-ink/70">{display(item.vendor?.name ?? item.vendorName)}</td>
+                    <td className="py-3 pr-4 text-ink/70">{formatLegacyQuantity(item)}</td>
+                    <td className="py-3 pr-4 text-ink/70">{formatMoney(item.unitCost)}</td>
+                    <td className="py-3 pr-4 text-ink/70">{formatMoney(item.totalCost)}</td>
+                    <td className="py-3 pr-4 text-ink/70">
+                      {display(item.metadata?.vendorName ?? item.vendor?.name ?? item.vendorName)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
