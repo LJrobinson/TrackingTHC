@@ -1,0 +1,112 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "2026-05-11-desert-bloom-approval-route",
+  "runType": "cannabis_approval_route",
+  "generatedBy": "cannabis-approval-router",
+  "generatedAt": "2026-05-11T13:27:00.000Z",
+  "startedAt": "2026-05-11T13:27:00.000Z",
+  "completedAt": "2026-05-11T13:27:02.000Z",
+  "status": "completed_with_warnings",
+  "sources": [
+    {
+      "system": "manual",
+      "name": "Approval request",
+      "fileName": "desert-bloom-aly-supplies-request.json",
+      "filePath": "samples/desert-bloom/desert-bloom-aly-supplies-request.json",
+      "receivedAt": "2026-05-11T13:26:30.000Z",
+      "metadata": {
+        "facility": "Desert Bloom Retail - Las Vegas",
+        "requestType": "store_supplies",
+        "category": "maintenance",
+        "amount": 118.43,
+        "requesterRole": "assistant_manager",
+        "requesterTrustLevel": "trusted",
+        "urgency": "normal"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "artifact_approval_request_json",
+      "role": "source",
+      "path": "samples/desert-bloom/desert-bloom-aly-supplies-request.json",
+      "format": "json",
+      "label": "Approval request input",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "artifact_approval_result_json",
+      "role": "output",
+      "path": "output/runs/2026-05-11-desert-bloom-approval-route/approval-result.json",
+      "format": "json",
+      "label": "Approval routing result",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "artifact_moby_run_manifest_json",
+      "role": "manifest",
+      "path": "output/runs/2026-05-11-desert-bloom-approval-route/moby-run-manifest.json",
+      "format": "json",
+      "label": "MOBY run manifest",
+      "mediaType": "application/json"
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MISSING_REQUIRED_EVIDENCE",
+      "severity": "warning",
+      "message": "Missing required evidence: business purpose note",
+      "artifactId": "artifact_approval_result_json",
+      "field": "evidence",
+      "metadata": {
+        "originalMessage": "Missing required evidence: business purpose note",
+        "requestType": "store_supplies",
+        "category": "maintenance",
+        "requesterRole": "assistant_manager",
+        "requesterTrustLevel": "trusted",
+        "requiredApproverRole": "gm",
+        "missingEvidenceItem": "business purpose note"
+      }
+    }
+  ],
+  "summary": {
+    "processedCount": 1,
+    "successCount": 1,
+    "warningCount": 1,
+    "errorCount": 0,
+    "artifactCount": 3,
+    "metadata": {
+      "decision": "allowed",
+      "riskLevel": "low",
+      "escalationRequired": false,
+      "requestType": "store_supplies",
+      "category": "maintenance",
+      "amount": 118.43
+    }
+  },
+  "metadata": {
+    "facility": "Desert Bloom Retail - Las Vegas",
+    "businessDate": "2026-05-11",
+    "inputFile": "samples/desert-bloom/desert-bloom-aly-supplies-request.json",
+    "outputFile": "output/runs/2026-05-11-desert-bloom-approval-route/approval-result.json",
+    "requestType": "store_supplies",
+    "category": "maintenance",
+    "amount": 118.43,
+    "requesterName": "Aly",
+    "requesterRole": "assistant_manager",
+    "requesterTrustLevel": "trusted",
+    "decision": "allowed",
+    "riskLevel": "low",
+    "requiredApproverRole": "gm",
+    "approvalPath": [
+      "assistant_manager",
+      "gm"
+    ],
+    "evidenceRequired": [
+      "receipt",
+      "business purpose note"
+    ],
+    "escalationRequired": false,
+    "reason": "Trusted assistant managers have a store supplies fast-pass at 200 or less."
+  }
+}

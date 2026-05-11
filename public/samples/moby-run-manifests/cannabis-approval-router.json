@@ -1,0 +1,105 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "approval-run-demo-001",
+  "runType": "cannabis_approval_route",
+  "generatedBy": "cannabis-approval-router",
+  "generatedAt": "2026-05-11T14:05:00.000Z",
+  "status": "completed_with_warnings",
+  "startedAt": "2026-05-11T14:04:48.000Z",
+  "completedAt": "2026-05-11T14:05:00.000Z",
+  "sources": [
+    {
+      "system": "manual",
+      "name": "Approval request",
+      "fileName": "store-supplies-request.json",
+      "filePath": "examples/store-supplies-request.json",
+      "receivedAt": "2026-05-11T14:04:40.000Z",
+      "metadata": {
+        "requestType": "reimbursement",
+        "category": "store_supplies",
+        "amount": 5,
+        "requesterRole": "assistant_manager",
+        "requesterTrustLevel": "trusted",
+        "urgency": "normal"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "artifact_approval_request_json",
+      "role": "source",
+      "path": "examples/store-supplies-request.json",
+      "format": "json",
+      "label": "Approval request",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "artifact_approval_result_json",
+      "role": "output",
+      "path": "approval-result.json",
+      "format": "json",
+      "label": "Approval routing result",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "artifact_moby_run_manifest_json",
+      "role": "manifest",
+      "path": "moby-run-manifest.json",
+      "format": "json",
+      "label": "MOBY run manifest",
+      "mediaType": "application/json"
+    }
+  ],
+  "warnings": [
+    {
+      "code": "MISSING_REQUIRED_EVIDENCE",
+      "severity": "warning",
+      "message": "Missing required evidence: business purpose note",
+      "artifactId": "artifact_approval_result_json",
+      "field": "evidence",
+      "metadata": {
+        "requestType": "reimbursement",
+        "category": "store_supplies",
+        "requesterRole": "assistant_manager",
+        "requesterTrustLevel": "trusted",
+        "missingEvidenceItem": "business purpose note"
+      }
+    }
+  ],
+  "summary": {
+    "processedCount": 1,
+    "successCount": 1,
+    "warningCount": 1,
+    "errorCount": 0,
+    "artifactCount": 3,
+    "metadata": {
+      "decision": "allowed",
+      "riskLevel": "low",
+      "escalationRequired": false,
+      "requestType": "reimbursement",
+      "category": "store_supplies",
+      "amount": 5
+    }
+  },
+  "metadata": {
+    "inputFile": "examples/store-supplies-request.json",
+    "outputFile": "output/runs/approval-run-demo-001/approval-result.json",
+    "requestType": "reimbursement",
+    "category": "store_supplies",
+    "amount": 5,
+    "requesterName": "Demo Assistant Manager",
+    "requesterRole": "assistant_manager",
+    "requesterTrustLevel": "trusted",
+    "decision": "allowed",
+    "riskLevel": "low",
+    "approvalPath": [
+      "assistant_manager",
+      "gm"
+    ],
+    "evidenceRequired": [
+      "receipt",
+      "business purpose note"
+    ],
+    "escalationRequired": false
+  }
+}

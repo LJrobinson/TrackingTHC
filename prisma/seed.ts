@@ -251,7 +251,7 @@ async function main() {
       facilityId: facility.id,
       facilityLicenseId: license.id,
       type: SyncJobType.SALES_RECEIPT,
-      status: SyncJobStatus.QUEUED,
+      status: SyncJobStatus.PENDING,
       syncStatus: SyncStatus.SYNC_PENDING,
       targetEntityType: "Sale",
       targetEntityId: sale.id

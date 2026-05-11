@@ -1,0 +1,134 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "import-run-demo-001",
+  "runType": "trackingthc_import",
+  "generatedBy": "trackingthc-import-mapper",
+  "generatedAt": "2026-05-11T14:00:00.000Z",
+  "status": "completed_with_warnings",
+  "startedAt": "2026-05-11T13:59:44.000Z",
+  "completedAt": "2026-05-11T14:00:00.000Z",
+  "sources": [
+    {
+      "system": "korona",
+      "name": "Korona package export",
+      "fileName": "korona-export-money-example.csv",
+      "filePath": "samples/korona-export-money-example.csv",
+      "receivedAt": "2026-05-11T13:58:30.000Z",
+      "metadata": {
+        "mappingFile": "samples/korona-mapping.json"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "artifact_normalized_csv",
+      "role": "output",
+      "path": "normalized.csv",
+      "format": "csv",
+      "label": "Normalized output",
+      "mediaType": "text/csv"
+    },
+    {
+      "id": "artifact_warnings_csv",
+      "role": "warnings",
+      "path": "warnings.csv",
+      "format": "csv",
+      "label": "Import warnings",
+      "mediaType": "text/csv"
+    },
+    {
+      "id": "artifact_summary_md",
+      "role": "summary",
+      "path": "summary.md",
+      "format": "markdown",
+      "label": "Human review summary",
+      "mediaType": "text/markdown"
+    },
+    {
+      "id": "artifact_run_manifest_json",
+      "role": "manifest",
+      "path": "run-manifest.json",
+      "format": "json",
+      "label": "Mapper run manifest",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "artifact_run_index_json",
+      "role": "other",
+      "path": "../index.json",
+      "format": "json",
+      "label": "Run index",
+      "mediaType": "application/json",
+      "metadata": {
+        "kind": "run_index"
+      }
+    },
+    {
+      "id": "artifact_moby_import_json",
+      "role": "sidecar",
+      "path": "moby-import.json",
+      "format": "json",
+      "label": "MOBY import sidecar",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "artifact_moby_run_manifest_json",
+      "role": "manifest",
+      "path": "moby-run-manifest.json",
+      "format": "json",
+      "label": "MOBY run manifest",
+      "mediaType": "application/json"
+    }
+  ],
+  "warnings": [
+    {
+      "code": "INVALID_TOTAL_COST",
+      "severity": "warning",
+      "message": "Total cost is not a valid number.",
+      "artifactId": "artifact_warnings_csv",
+      "field": "package.totalCost",
+      "rowNumber": 5,
+      "metadata": {
+        "productName": "Bad Cost Example",
+        "packageId": "1A406030000888",
+        "quantity": "10",
+        "totalCost": "N/A"
+      }
+    },
+    {
+      "code": "UNIT_COST_NOT_CALCULATED",
+      "severity": "warning",
+      "message": "Unit cost could not be calculated.",
+      "artifactId": "artifact_warnings_csv",
+      "field": "package.unitCost",
+      "rowNumber": 5,
+      "metadata": {
+        "productName": "Bad Cost Example",
+        "packageId": "1A406030000888",
+        "quantity": "10",
+        "totalCost": "N/A"
+      }
+    }
+  ],
+  "summary": {
+    "processedCount": 4,
+    "successCount": 4,
+    "warningCount": 2,
+    "errorCount": 0,
+    "artifactCount": 7,
+    "metadata": {
+      "unitCostsCalculated": 3
+    }
+  },
+  "metadata": {
+    "sourceFile": "samples/korona-export-money-example.csv",
+    "mappingFile": "samples/korona-mapping.json",
+    "outputFile": "output/runs/import-run-demo-001/normalized.csv",
+    "warningsFile": "output/runs/import-run-demo-001/warnings.csv",
+    "summaryFile": "output/runs/import-run-demo-001/summary.md",
+    "legacyRunManifestFile": "output/runs/import-run-demo-001/run-manifest.json",
+    "runIndexFile": "output/runs/index.json",
+    "mobyImportFile": "output/runs/import-run-demo-001/moby-import.json",
+    "mobyRunManifestFile": "output/runs/import-run-demo-001/moby-run-manifest.json"
+  }
+}

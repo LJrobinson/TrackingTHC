@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "2026-05-11-desert-bloom-invoice-costing",
+  "runType": "invoice_cost_spread",
+  "generatedBy": "invoice-cost-spreader",
+  "generatedAt": "2026-05-11T13:18:00.000Z",
+  "startedAt": "2026-05-11T13:18:00.000Z",
+  "completedAt": "2026-05-11T13:18:03.000Z",
+  "status": "completed",
+  "sources": [
+    {
+      "system": "manual",
+      "name": "Desert Bloom vendor invoice",
+      "fileName": "desert-bloom-rythm-invoice-2026-05-11.json",
+      "filePath": "samples/desert-bloom/desert-bloom-rythm-invoice-2026-05-11.json",
+      "receivedAt": "2026-05-11T13:17:30.000Z",
+      "metadata": {
+        "facility": "Desert Bloom Retail - Las Vegas",
+        "vendor": "Rythm",
+        "allocationMethod": "value",
+        "lineCount": 3,
+        "additionalCosts": 72.5,
+        "discounts": 25
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "artifact_invoice_input_json",
+      "role": "source",
+      "path": "samples/desert-bloom/desert-bloom-rythm-invoice-2026-05-11.json",
+      "format": "json",
+      "label": "Vendor invoice input",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "artifact_spread_result_json",
+      "role": "output",
+      "path": "output/runs/2026-05-11-desert-bloom-invoice-costing/spread-result.json",
+      "format": "json",
+      "label": "Spread cost result",
+      "mediaType": "application/json"
+    },
+    {
+      "id": "artifact_moby_run_manifest_json",
+      "role": "manifest",
+      "path": "output/runs/2026-05-11-desert-bloom-invoice-costing/moby-run-manifest.json",
+      "format": "json",
+      "label": "MOBY run manifest",
+      "mediaType": "application/json"
+    }
+  ],
+  "warnings": [],
+  "summary": {
+    "processedCount": 3,
+    "successCount": 3,
+    "warningCount": 0,
+    "errorCount": 0,
+    "artifactCount": 3,
+    "metadata": {
+      "allocationMethod": "value",
+      "totalBaseCost": 1425,
+      "totalQuantity": 30,
+      "additionalCosts": 72.5,
+      "discounts": 25,
+      "netAdditionalCost": 47.5
+    }
+  },
+  "metadata": {
+    "facility": "Desert Bloom Retail - Las Vegas",
+    "businessDate": "2026-05-11",
+    "inputFile": "samples/desert-bloom/desert-bloom-rythm-invoice-2026-05-11.json",
+    "outputFile": "output/runs/2026-05-11-desert-bloom-invoice-costing/spread-result.json",
+    "lineCount": 3,
+    "allocationMethod": "value",
+    "totalBaseCost": 1425,
+    "totalQuantity": 30,
+    "additionalCosts": 72.5,
+    "discounts": 25,
+    "netAdditionalCost": 47.5,
+    "notes": "Rythm delivery included an invoice but required landed-cost allocation before finance review."
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "generated-desert-bloom-import",
+  "runType": "trackingthc_import",
+  "generatedBy": "trackingthc-import-mapper",
+  "generatedAt": "2026-05-11T15:39:16.452Z",
+  "status": "completed",
+  "startedAt": "2026-05-11T15:39:16.452Z",
+  "completedAt": "2026-05-11T15:39:16.452Z",
+  "sources": [
+    {
+      "system": "korona",
+      "name": "korona import source",
+      "fileName": "korona-export-example.csv",
+      "filePath": ".\\samples\\korona-export-example.csv",
+      "receivedAt": "2026-05-11T15:39:16.452Z",
+      "metadata": {
+        "mappingFile": ".\\samples\\korona-mapping.json"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "artifact_normalized_csv",
+      "role": "output",
+      "format": "csv",
+      "label": "Normalized output",
+      "mediaType": "text/csv",
+      "path": "normalized.csv"
+    },
+    {
+      "id": "artifact_warnings_csv",
+      "role": "warnings",
+      "format": "csv",
+      "label": "Import warnings",
+      "mediaType": "text/csv",
+      "path": "warnings.csv"
+    },
+    {
+      "id": "artifact_summary_md",
+      "role": "summary",
+      "format": "markdown",
+      "label": "Human review summary",
+      "mediaType": "text/markdown",
+      "path": "summary.md"
+    },
+    {
+      "id": "artifact_run_manifest_json",
+      "role": "manifest",
+      "format": "json",
+      "label": "Mapper run manifest",
+      "mediaType": "application/json",
+      "path": "run-manifest.json"
+    },
+    {
+      "id": "artifact_run_index_json",
+      "role": "other",
+      "format": "json",
+      "label": "Run index",
+      "mediaType": "application/json",
+      "metadata": {
+        "kind": "run_index"
+      },
+      "path": "../index.json"
+    },
+    {
+      "id": "artifact_moby_run_manifest_json",
+      "role": "manifest",
+      "format": "json",
+      "label": "MOBY run manifest",
+      "mediaType": "application/json",
+      "path": "moby-run-manifest.json"
+    }
+  ],
+  "warnings": [],
+  "summary": {
+    "processedCount": 2,
+    "successCount": 2,
+    "warningCount": 0,
+    "errorCount": 0,
+    "artifactCount": 6,
+    "metadata": {
+      "unitCostsCalculated": 2
+    }
+  },
+  "metadata": {
+    "sourceFile": ".\\samples\\korona-export-example.csv",
+    "mappingFile": ".\\samples\\korona-mapping.json",
+    "outputFile": "runs\\generated-desert-bloom-import\\normalized.csv",
+    "warningsFile": "runs\\generated-desert-bloom-import\\warnings.csv",
+    "summaryFile": "runs\\generated-desert-bloom-import\\summary.md",
+    "legacyRunManifestFile": "runs\\generated-desert-bloom-import\\run-manifest.json",
+    "runIndexFile": "runs\\index.json",
+    "mobyRunManifestFile": "runs\\generated-desert-bloom-import\\moby-run-manifest.json"
+  }
+}

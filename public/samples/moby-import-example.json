@@ -1,0 +1,198 @@
+{
+  "schemaVersion": "1.0",
+  "generatedBy": "trackingthc-import-mapper",
+  "generatedAt": "2026-05-11T04:33:02.386Z",
+  "mappingProfile": {
+    "id": "real-moby-demo-002-mapping-profile",
+    "name": "korona import mapping",
+    "source": "korona",
+    "createdAt": "2026-05-11T04:33:02.386Z",
+    "mappings": [
+      {
+        "sourceField": "Item Name",
+        "canonicalField": "product.name",
+        "status": "mapped"
+      },
+      {
+        "sourceField": "Package ID",
+        "canonicalField": "package.id",
+        "status": "mapped"
+      },
+      {
+        "sourceField": "Qty On Hand",
+        "canonicalField": "package.quantity",
+        "status": "mapped"
+      },
+      {
+        "sourceField": "Total Cost",
+        "canonicalField": "package.totalCost",
+        "status": "mapped"
+      },
+      {
+        "sourceField": "Vendor",
+        "canonicalField": "vendor.name",
+        "status": "mapped"
+      }
+    ]
+  },
+  "importRun": {
+    "id": "real-moby-demo-002",
+    "source": "korona",
+    "status": "completed_with_warnings",
+    "filename": "samples/korona-export-money-example.csv",
+    "startedAt": "2026-05-11T04:33:02.386Z",
+    "completedAt": "2026-05-11T04:33:02.386Z",
+    "summary": {
+      "rowCount": 4,
+      "successCount": 4,
+      "warningCount": 2,
+      "errorCount": 0
+    },
+    "metadata": {
+      "sourceFile": "samples/korona-export-money-example.csv",
+      "mappingFile": "samples/korona-mapping.json",
+      "outputFile": "output\\runs\\real-moby-demo-002\\normalized.csv",
+      "warningsFile": "output\\runs\\real-moby-demo-002\\warnings.csv",
+      "unitCostsCalculated": 3,
+      "originalStatus": "success"
+    }
+  },
+  "validationIssues": [
+    {
+      "code": "INVALID_TOTAL_COST",
+      "severity": "warning",
+      "message": "Total cost is not a valid number.",
+      "rowNumber": 5,
+      "field": "package.totalCost",
+      "metadata": {
+        "productName": "Bad Cost Example",
+        "packageId": "1A406030000888",
+        "quantity": "10",
+        "totalCost": "N/A"
+      }
+    },
+    {
+      "code": "UNIT_COST_NOT_CALCULATED",
+      "severity": "warning",
+      "message": "Unit cost could not be calculated.",
+      "rowNumber": 5,
+      "field": "package.unitCost",
+      "metadata": {
+        "productName": "Bad Cost Example",
+        "packageId": "1A406030000888",
+        "quantity": "10",
+        "totalCost": "N/A"
+      }
+    }
+  ],
+  "packages": [
+    {
+      "id": "package_1A406030000123",
+      "label": "1A406030000123",
+      "quantity": {
+        "value": 20,
+        "unit": "each"
+      },
+      "unitCost": {
+        "amount": 20,
+        "currency": "USD"
+      },
+      "totalCost": {
+        "amount": 400,
+        "currency": "USD"
+      },
+      "externalReferences": [
+        {
+          "system": "korona",
+          "externalId": "samples/korona-export-money-example.csv:2",
+          "label": "Normalized row reference"
+        }
+      ],
+      "metadata": {
+        "productName": "Blue Dream 3.5g",
+        "vendorName": "Some Vendor",
+        "rowNumber": 2,
+        "sourceFile": "samples/korona-export-money-example.csv"
+      }
+    },
+    {
+      "id": "package_1A406030000456",
+      "label": "1A406030000456",
+      "quantity": {
+        "value": 50,
+        "unit": "each"
+      },
+      "unitCost": {
+        "amount": 25,
+        "currency": "USD"
+      },
+      "totalCost": {
+        "amount": 1250,
+        "currency": "USD"
+      },
+      "externalReferences": [
+        {
+          "system": "korona",
+          "externalId": "samples/korona-export-money-example.csv:3",
+          "label": "Normalized row reference"
+        }
+      ],
+      "metadata": {
+        "productName": "Gelato Pre-Roll",
+        "vendorName": "Another Vendor",
+        "rowNumber": 3,
+        "sourceFile": "samples/korona-export-money-example.csv"
+      }
+    },
+    {
+      "id": "package_1A406030000777",
+      "label": "1A406030000777",
+      "quantity": {
+        "value": 1,
+        "unit": "each"
+      },
+      "unitCost": {
+        "amount": -42,
+        "currency": "USD"
+      },
+      "totalCost": {
+        "amount": -42,
+        "currency": "USD"
+      },
+      "externalReferences": [
+        {
+          "system": "korona",
+          "externalId": "samples/korona-export-money-example.csv:4",
+          "label": "Normalized row reference"
+        }
+      ],
+      "metadata": {
+        "productName": "Return Adjustment",
+        "vendorName": "Some Vendor",
+        "rowNumber": 4,
+        "sourceFile": "samples/korona-export-money-example.csv"
+      }
+    },
+    {
+      "id": "package_1A406030000888",
+      "label": "1A406030000888",
+      "quantity": {
+        "value": 10,
+        "unit": "each"
+      },
+      "externalReferences": [
+        {
+          "system": "korona",
+          "externalId": "samples/korona-export-money-example.csv:5",
+          "label": "Normalized row reference"
+        }
+      ],
+      "metadata": {
+        "productName": "Bad Cost Example",
+        "vendorName": "Vendor Goblin",
+        "rowNumber": 5,
+        "sourceFile": "samples/korona-export-money-example.csv"
+      }
+    }
+  ]
+}
