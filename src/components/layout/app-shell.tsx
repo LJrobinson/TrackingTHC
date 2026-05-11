@@ -23,6 +23,7 @@ export function AppShell({ user, children }: AppShellProps) {
         </div>
         <nav className="mx-auto flex max-w-7xl gap-1 px-6 pb-3">
           <NavLink href="/dashboard" label="Dashboard" />
+          <NavLink href="/moby-runs" label="MOBY Runs" />
           <NavLink href="/inventory" label="Inventory" />
           <NavLink href="/products" label="Products" />
           <NavLink href="/sales" label="Sales" />
