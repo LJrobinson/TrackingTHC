@@ -96,11 +96,10 @@ enum SyncJobType {
 }
 
 enum SyncJobStatus {
-  QUEUED
+  PENDING
   RUNNING
   SUCCEEDED
   FAILED
-  CANCELED
 }
 
 enum MetrcCredentialStatus {
@@ -405,7 +404,7 @@ model MetrcSyncJob {
   facilityId        String
   facilityLicenseId String?
   type              SyncJobType
-  status            SyncJobStatus @default(QUEUED)
+  status            SyncJobStatus @default(PENDING)
   syncStatus        SyncStatus    @default(SYNC_PENDING)
   targetEntityType  String?
   targetEntityId    String?
